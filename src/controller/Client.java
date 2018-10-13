@@ -52,7 +52,7 @@ public class Client extends TimerTask implements KeyEventDispatcher {
 	
 	private void handleKeyPress (int keyCode) {
 		if (keyCode == KeyEvent.VK_SHIFT) {
-			// TODO throw spear
+			model.tryThrowSpear(0);
 			return;
 		}
 		

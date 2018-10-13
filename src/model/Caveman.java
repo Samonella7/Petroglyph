@@ -8,10 +8,7 @@ public class Caveman extends Participant {
 
 	public static final double CAVEMAN_WIDTH = .03;
 	public static final double CAVEMAN_LENGTH = .03;
-	public static final double CAVEMAN_SPEED = .01;
-	
-	public static final double HELD_SPEAR_W_OFFSET = Spear.SPEAR_WIDTH;
-	public static final double HELD_SPEAR_L_OFFSET = (Spear.SPEAR_LENGTH - CAVEMAN_LENGTH) / 2;
+	public static final double CAVEMAN_SPEED = .008;
 
 	private Spear spear;
 	private boolean moving;
@@ -41,7 +38,7 @@ public class Caveman extends Participant {
 	@Override
 	public Hitbox getHitbox() {
 		if (direction == Direction.up || direction == Direction.down) {
-			return new Hitbox(x, y, CAVEMAN_WIDTH, CAVEMAN_LENGTH);			
+			return new Hitbox(x, y, CAVEMAN_WIDTH, CAVEMAN_LENGTH);
 		} else {
 			return new Hitbox(x, y, CAVEMAN_LENGTH, CAVEMAN_WIDTH);
 		}
@@ -52,25 +49,25 @@ public class Caveman extends Participant {
 		if (moving) {
 			super.move(CAVEMAN_SPEED);
 		}
-		
+
 		// Drag the spear along if it is held
 		if (hasSpear()) {
 			spear.direction = direction;
 			switch (direction) {
 			case up:
 				spear.x = x + CAVEMAN_WIDTH;
-				spear.y = y - HELD_SPEAR_L_OFFSET;
+				spear.y = y - (Spear.SPEAR_LENGTH - CAVEMAN_LENGTH) * 3.0/4.0;
 				break;
 			case down:
-				spear.x = x - HELD_SPEAR_W_OFFSET;
-				spear.y = y - HELD_SPEAR_L_OFFSET;
+				spear.x = x - Spear.SPEAR_WIDTH;
+				spear.y = y - (Spear.SPEAR_LENGTH - CAVEMAN_LENGTH) * 1.0/4.0;
 				break;
 			case left:
-				spear.x = x - HELD_SPEAR_L_OFFSET;
-				spear.y = y - HELD_SPEAR_W_OFFSET;
+				spear.x = x - (Spear.SPEAR_LENGTH - CAVEMAN_LENGTH) * 3.0/4.0;
+				spear.y = y - Spear.SPEAR_WIDTH;
 				break;
 			case right:
-				spear.x = x - HELD_SPEAR_L_OFFSET;
+				spear.x = x - (Spear.SPEAR_LENGTH - CAVEMAN_LENGTH) * 1.0/4.0;
 				spear.y = y + CAVEMAN_WIDTH;
 				break;
 			}

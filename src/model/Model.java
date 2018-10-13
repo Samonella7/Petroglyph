@@ -3,6 +3,7 @@ package model;
 import java.awt.Color;
 
 import model.Participant.Direction;
+import model.Spear.SpearState;
 
 public class Model {
 	private Caveman[] cavemen;
@@ -43,10 +44,20 @@ public class Model {
 		for (Spear s : spears) {
 			s.move();
 		}
+		
+		for (int i = 0; i < cavemen.length; i++) {
+			if (spears[i].state == SpearState.grounded && cavemen[i].collidedWith(spears[i])) {
+				spears[i].state = SpearState.held;
+			}
+		}
 	}
 	
 	public void directCaveman (int cavemanNumber, Direction direction, boolean moving) {
 		cavemen[cavemanNumber].setDirection(direction);
 		cavemen[cavemanNumber].setMoving(moving);
+	}
+	
+	public void tryThrowSpear (int cavemanNumber) {
+		spears[cavemanNumber].tryLaunch();
 	}
 }

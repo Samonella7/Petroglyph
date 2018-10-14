@@ -25,7 +25,7 @@ public class Client extends TimerTask implements KeyEventDispatcher {
 	ArrayList<Direction> directionalInputs;
 	
 	public Client () {
-		model = new Model();
+		model = new Model(.1);
 		view = new GameView(model.getParticipantList(), this);
 		
 		directionalInputs = new ArrayList<Direction>();

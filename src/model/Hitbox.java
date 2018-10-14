@@ -8,13 +8,13 @@ package model;
 public class Hitbox {
 	public double leftX;
 	public double topY;
-	
+
 	public double width;
 	public double length;
-	
+
 	public double rightX;
 	public double bottomY;
-	
+
 	/**
 	 * Makes a Hitbox with the given dimensions
 	 */
@@ -26,7 +26,7 @@ public class Hitbox {
 		this.width = width;
 		this.length = length;
 	}
-	
+
 	/**
 	 * Makes a new Hitbox identical to the given one
 	 */

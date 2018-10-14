@@ -5,12 +5,11 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
-import model.Caveman;
 import model.Hitbox;
 import model.Mammoth;
-import model.Participant;
-import model.Spear;
 import model.Participant.Direction;
+import model.SimpleParticipant;
+import model.SimpleParticipant.ParticipantType;
 
 /**
  * A panel for displaying the Petroglyph gameboard
@@ -40,14 +39,7 @@ class GamePanel extends JPanel {
 	private int spearTipHeight;
 
 	/** An array of the participants that should be drawn */
-	private Participant[] participants;
-
-	/**
-	 * Creates a GamePanel that will draw all participants in the given array
-	 */
-	public GamePanel(Participant[] participants) {
-		this.participants = participants;
-	}
+	private SimpleParticipant[] participants;
 
 	/**
 	 * Recalculates field-variables that depend on the size of this panel
@@ -61,6 +53,15 @@ class GamePanel extends JPanel {
 	}
 
 	/**
+	 * Updates the display, taking into account any changes to the GameWindow's
+	 * participants
+	 */
+	public void update(SimpleParticipant[] participants) {
+		this.participants = participants;
+		repaint();
+	}
+
+	/**
 	 * Redraws this panel, taking into account changes (if any) in the location of
 	 * the participants that this GamePanel draws
 	 */
@@ -71,13 +72,16 @@ class GamePanel extends JPanel {
 		g.setColor(BACKGROUND_COLOR);
 		g.fillRect(0, 0, panelWidth, panelHeight);
 
-		for (Participant p : participants) {
-			if (p instanceof Caveman) {
-				paintCaveman(g, (Caveman) p);
-			} else if (p instanceof Spear) {
-				paintSpear(g, (Spear) p);
+		if (participants == null)
+			return;
+
+		for (SimpleParticipant p : participants) {
+			if (p.getType() == ParticipantType.caveman) {
+				paintCaveman(g, p);
+			} else if (p.getType() == ParticipantType.spear) {
+				paintSpear(g, p);
 			} else {
-				paintMammoth(g, (Mammoth) p);
+				paintMammoth(g, p);
 			}
 		}
 	}
@@ -85,7 +89,7 @@ class GamePanel extends JPanel {
 	/**
 	 * Draws the given caveman onto the given graphics object
 	 */
-	private void paintCaveman(Graphics g, Caveman c) {
+	private void paintCaveman(Graphics g, SimpleParticipant c) {
 		PixelBox box = new PixelBox(c.getHitbox(), panelWidth, panelHeight);
 		g.setColor(c.getColor());
 		g.fillRect(box.leftX, box.topY, box.width, box.length);
@@ -94,7 +98,7 @@ class GamePanel extends JPanel {
 	/**
 	 * Draws the given spear onto the given graphics object
 	 */
-	private void paintSpear(Graphics g, Spear s) {
+	private void paintSpear(Graphics g, SimpleParticipant s) {
 		PixelBox box = new PixelBox(s.getHitbox(), panelWidth, panelHeight);
 		g.setColor(s.getColor());
 
@@ -159,7 +163,7 @@ class GamePanel extends JPanel {
 	/**
 	 * Draws the given mammoth onto the given graphics object
 	 */
-	private void paintMammoth(Graphics g, Mammoth m) {
+	private void paintMammoth(Graphics g, SimpleParticipant m) {
 		g.setColor(m.getColor());
 
 		Hitbox oHb = m.getHitbox();

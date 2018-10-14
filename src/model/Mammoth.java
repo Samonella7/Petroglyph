@@ -26,11 +26,36 @@ public class Mammoth extends Participant {
 	 */
 	public static final double MAMMOTH_HEAD_LENGTH = MAMMOTH_LENGTH - MAMMOTH_WIDTH;
 
+	/**
+	 * The number of frames for which the Mammoth will stay angry at a caveman that
+	 * hit it
+	 */
+	public static final int AGGRO_FRAMES = 300;
+
+	/**
+	 * A Scalar that determines how much the Mammoth will target aggro-ed cavemen
+	 */
+	public static final double AGGRO_SCALAR = 2.2;
+
+	/** The amount of damage that mammoths takes per spear per frame */
+	public static final double SPEAR_DPF = .008;
+
 	/** The maximum speed that this mammoth can move at */
 	private double maxSpeed;
 
 	/** An array of 3 cavemen for the mammoth to target */
 	private Caveman[] cavemen;
+
+	/**
+	 * An array to identify cavemen that this Mammoth is angry at.
+	 * 
+	 * aggros[0] is the number of remaining frames for which the Mammoth will target
+	 * caveman 0.
+	 */
+	private int[] aggros;
+
+	/** The percent of this mammoth's health that remains */
+	private double hp;
 
 	/**
 	 * Creates a mammoth in the center of the map
@@ -47,6 +72,26 @@ public class Mammoth extends Participant {
 		this.y = .5 - MAMMOTH_LENGTH / 2;
 		this.direction = Direction.up;
 		this.color = new Color(66, 33, 00);
+		this.hp = 1;
+		aggros = new int[cavemen.length];
+	}
+
+	/**
+	 * Makes this mammoth take damage for 1 frame of 1 collided spear, and allows
+	 * the movement algorithm to prioritize the caveman that hit it.
+	 */
+	public void takeDamage(int caveman) {
+		hp -= SPEAR_DPF;
+		if (hp < 0)
+			hp = 0;
+		aggros[caveman] = AGGRO_FRAMES;
+	}
+
+	/**
+	 * Returns a percentage representing how much of this Mammoth's health remains
+	 */
+	public double getHP() {
+		return hp;
 	}
 
 	/**
@@ -161,8 +206,14 @@ public class Mammoth extends Participant {
 		y += vector.y;
 
 		// Also, turn to face that direction if the mammoth is moving very quickly
-		if (improvement > .08) {
+		if (improvement > .05) {
 			turn(targetLoc);
+		}
+
+		// Now that movement is over, reduce the frame counts in aggros
+		for (int i = 0; i < aggros.length; i++) {
+			if (aggros[i] > 0)
+				aggros[i]--;
 		}
 	}
 
@@ -178,9 +229,20 @@ public class Mammoth extends Participant {
 
 		// weighted average of the cavemen's locations, where each point's weight is
 		// inversely correlated to the distance from the mammoth
-		double w0 = Math.pow(1.8 - c0Loc.minus(mamLoc).norm(), 5);
-		double w1 = Math.pow(1.8 - c1Loc.minus(mamLoc).norm(), 5);
-		double w2 = Math.pow(1.8 - c2Loc.minus(mamLoc).norm(), 5);
+		double w0 = Math.pow(1.8 - c0Loc.minus(mamLoc).norm(), 6);
+		double w1 = Math.pow(1.8 - c1Loc.minus(mamLoc).norm(), 6);
+		double w2 = Math.pow(1.8 - c2Loc.minus(mamLoc).norm(), 6);
+
+		// Weights are also effected by the aggro
+		if (aggros[0] > 0) {
+			w0 *= AGGRO_SCALAR;
+		}
+		if (aggros[1] > 0) {
+			w1 *= AGGRO_SCALAR;
+		}
+		if (aggros[2] > 0) {
+			w2 *= AGGRO_SCALAR;
+		}
 
 		c0Loc.scaleBy(w0);
 		c1Loc.scaleBy(w1);
@@ -202,12 +264,20 @@ public class Mammoth extends Participant {
 	 */
 	private double scoreOf(Vector location) {
 		double totalScore = 0;
-		for (Caveman c : cavemen) {
-			Vector cLoc = new Vector(c.getCenterX(), c.getCenterY());
+		double totalPossible = 0;
+		for (int i = 0; i < cavemen.length; i++) {
+			Vector cLoc = new Vector(cavemen[i].getCenterX(), cavemen[i].getCenterY());
 			Vector difference = cLoc.minus(location);
-			totalScore += 1.0 / 3.0 - difference.norm();
+			double partialScore = 1.0 - difference.norm();
+			if (aggros[i] > 0) {
+				totalScore += partialScore * AGGRO_SCALAR;
+				totalPossible += AGGRO_SCALAR;
+			} else {
+				totalScore += partialScore;
+				totalPossible += 1;
+			}
 		}
-		return totalScore;
+		return Math.pow(totalScore / totalPossible, 2);
 	}
 
 	/**

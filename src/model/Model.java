@@ -22,17 +22,25 @@ public class Model {
 	private Mammoth mammoth;
 
 	/**
-	 * An array of references to all participants, ai, the combination of cavemen,
-	 * spears, and mammoth
+	 * Returns a representation of all the game's participants.
+	 * getParticipantList()[0] is a SimpleParticipant representing the Mammoth. Next
+	 * are representations for the cavemen, and finally for the spears.
 	 */
-	private Participant[] allParticipants;
+	public SimpleParticipant[] getParticipantList() {
+		SimpleParticipant[] list = new SimpleParticipant[cavemen.length + spears.length + 1];
 
-	/**
-	 * Returns an array of references to all participants, ai, the combination of
-	 * cavemen, spears, and mammoth
-	 */
-	public Participant[] getParticipantList() {
-		return allParticipants;
+		list[0] = new SimpleParticipant(mammoth);
+
+		int i = 1;
+		for (; i < 1 + cavemen.length; i++) {
+			list[i] = new SimpleParticipant(cavemen[i - 1]);
+		}
+
+		for (; i < list.length; i++) {
+			list[i] = new SimpleParticipant(spears[i - 1 - cavemen.length]);
+		}
+
+		return list;
 	}
 
 	/**
@@ -42,27 +50,19 @@ public class Model {
 	 *            The maximum speed that the mammoth should be able to move at
 	 */
 	public Model(double mammothSpeedScaler) {
-		allParticipants = new Participant[7];
 		cavemen = new Caveman[3];
 		spears = new Spear[3];
 
 		cavemen[0] = new Caveman(.1, .1, Color.red);
 		spears[0] = cavemen[0].getSpear();
-		allParticipants[1] = cavemen[0];
-		allParticipants[4] = spears[0];
 
 		cavemen[1] = new Caveman(.9 - Caveman.CAVEMAN_WIDTH, .1, Color.cyan);
 		spears[1] = cavemen[1].getSpear();
-		allParticipants[2] = cavemen[1];
-		allParticipants[5] = spears[1];
 
 		cavemen[2] = new Caveman(.5 - Caveman.CAVEMAN_WIDTH / 2, .8, Color.yellow);
 		spears[2] = cavemen[2].getSpear();
-		allParticipants[3] = cavemen[2];
-		allParticipants[6] = spears[2];
 
 		mammoth = new Mammoth(mammothSpeedScaler, cavemen);
-		allParticipants[0] = mammoth;
 	}
 
 	/**
@@ -78,9 +78,16 @@ public class Model {
 
 		mammoth.move();
 
+		// Caveman can pick up their spear
 		for (int i = 0; i < cavemen.length; i++) {
 			if (spears[i].state == SpearState.grounded && cavemen[i].collidedWith(spears[i])) {
 				spears[i].state = SpearState.held;
+			}
+		}
+
+		for (int i = 0; i < spears.length; i++) {
+			if (spears[i].state == SpearState.active && mammoth.collidedWith(spears[i])) {
+				mammoth.takeDamage(i);
 			}
 		}
 	}

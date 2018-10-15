@@ -29,7 +29,7 @@ public class Caveman extends Participant {
 
 	/** True if this caveman is trying to move, false otherwise */
 	private boolean moving;
-	
+
 	/** True if this caveman is conscious (able to move around), false otherwise */
 	private boolean conscious;
 
@@ -37,12 +37,15 @@ public class Caveman extends Participant {
 	public void setConscious(boolean conscious) {
 		this.conscious = conscious;
 	}
-	
-	/** Returns true if this caveman is conscious (able to move around), false otherwise */
+
+	/**
+	 * Returns true if this caveman is conscious (able to move around), false
+	 * otherwise
+	 */
 	public boolean isConscious() {
 		return conscious;
 	}
-	
+
 	/** Returns a reference to this caveman's spear */
 	public Spear getSpear() {
 		return spear;
@@ -119,8 +122,8 @@ public class Caveman extends Participant {
 	}
 
 	/**
-	 * If this spear is held by its (conscious) associated caveman, throw this spear. Does
-	 * nothing otherwise.
+	 * If this spear is held by its (conscious) associated caveman, throw this
+	 * spear. Does nothing otherwise.
 	 */
 	public void tryThrowSpear() {
 		if (conscious && spear.state == SpearState.held) {

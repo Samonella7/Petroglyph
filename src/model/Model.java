@@ -20,12 +20,10 @@ public class Model {
 	private Spear[] spears;
 	/** A reference to the mammoth */
 	private Mammoth mammoth;
-	
+
 	/** A state that the game can be in */
 	public enum GameState {
-		running,
-		win,
-		loss
+		running, win, loss
 	}
 
 	/**
@@ -91,8 +89,8 @@ public class Model {
 				spears[i].state = SpearState.held;
 			}
 		}
-		
-		// Cavemen can revive each other 
+
+		// Cavemen can revive each other
 		for (int reviver = 0; reviver < cavemen.length; reviver++) {
 			if (!cavemen[reviver].isConscious()) {
 				continue;
@@ -113,19 +111,19 @@ public class Model {
 				cavemen[i].setConscious(false);
 			}
 		}
-		
+
 		// Spears damage the mammoth
 		for (int i = 0; i < spears.length; i++) {
 			if (spears[i].state == SpearState.active && mammoth.collidedWith(spears[i])) {
 				mammoth.takeDamage(i);
 			}
 		}
-		
+
 		// You win if the mammoth's hp reaches 0
 		if (mammoth.getHP() == 0) {
 			return GameState.win;
 		}
-		
+
 		// You lose of all Cavemen are unconscious
 		int consciousCount = 0;
 		for (int i = 0; i < cavemen.length; i++) {
@@ -136,7 +134,7 @@ public class Model {
 		if (consciousCount == 0) {
 			return GameState.loss;
 		}
-		
+
 		// otherwise, the game is still in progress
 		return GameState.running;
 	}

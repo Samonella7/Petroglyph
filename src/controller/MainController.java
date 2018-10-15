@@ -23,11 +23,11 @@ public class MainController implements KeyEventDispatcher {
 		server = new GameEngine(view, 3, startingLevel);
 		server.startRound();
 	}
-	
+
 	public void gameLoss() {
 		server = null;
 	}
-	
+
 	public void roundWin() {
 		server.startRound();
 	}

@@ -38,7 +38,7 @@ public class GameView extends JPanel implements ActionListener {
 
 	/** A reference to the controller */
 	private MainController controller;
-	
+
 	/** A reference to the main window */
 	private PetroglyphWindow mainWindow;
 
@@ -47,7 +47,7 @@ public class GameView extends JPanel implements ActionListener {
 
 	/** A button that allows the user to return to the lobby after a loss */
 	private JButton endGameButton;
-	
+
 	/**
 	 * Creates a GameViewx
 	 * 
@@ -112,12 +112,12 @@ public class GameView extends JPanel implements ActionListener {
 
 		JPanel buttonPanel = new JPanel();
 		sidePanel.add(buttonPanel);
-		
+
 		nextLevelButton = new JButton("Next Level");
 		nextLevelButton.addActionListener(this);
 		nextLevelButton.setVisible(false);
 		buttonPanel.add(nextLevelButton);
-		
+
 		endGameButton = new JButton("End Game");
 		endGameButton.addActionListener(this);
 		endGameButton.setVisible(false);
@@ -125,17 +125,17 @@ public class GameView extends JPanel implements ActionListener {
 
 		sidePanel.add(Box.createVerticalGlue());
 	}
-	
-	/** 
+
+	/**
 	 * Prepares the display for a new round
 	 */
-	public void reset (int level) {
+	public void reset(int level) {
 		levelField.setText("" + level);
 		nextLevelButton.setVisible(false);
 		endGameButton.setVisible(false);
 		gamePanel.reset();
 	}
-	
+
 	/**
 	 * Updates the display, taking into account any changes to the GameWindow's
 	 * participants.
@@ -196,7 +196,7 @@ public class GameView extends JPanel implements ActionListener {
 		if (e.getSource() == nextLevelButton) {
 			controller.roundWin();
 		}
-		
+
 		else if (e.getSource() == endGameButton) {
 			controller.gameLoss();
 			mainWindow.enterLobbyView();

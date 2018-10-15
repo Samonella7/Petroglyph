@@ -14,9 +14,9 @@ import view.GameView;
 public class GameEngine implements KeyEventDispatcher {
 
 	public static final int MILLIES_PER_FRAME = 1000 / 40;
-	
+
 	public static final double INITIAL_MAMMOTH_SPEED = .05;
-	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .02;
+	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .015;
 
 	/**
 	 * An array of 5 Virtual Key Codes that will be used as the controls for player
@@ -58,13 +58,13 @@ public class GameEngine implements KeyEventDispatcher {
 
 	/** The directional inputs that player 2 is currently pressing */
 	ArrayList<Direction> P2Inputs;
-	
+
 	/** The current level */
 	int level;
 
 	public GameEngine(GameView gameView, int localPlayerCount, int startingLevel) {
 		view = gameView;
-		
+
 		// -1 because it is incremented each time a level starts, even the first time:
 		level = startingLevel - 1;
 
@@ -74,13 +74,13 @@ public class GameEngine implements KeyEventDispatcher {
 		if (localPlayerCount > 2)
 			P2Inputs = new ArrayList<Direction>();
 	}
-	
+
 	public void startRound() {
 		level++;
 		model = new Model(INITIAL_MAMMOTH_SPEED + level * MAMMOTH_SPEEDUP_PER_LEVEL);
-		
+
 		view.reset(level);
-		
+
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new newFrameHandler(), 0, MILLIES_PER_FRAME);
 	}
@@ -89,12 +89,12 @@ public class GameEngine implements KeyEventDispatcher {
 		@Override
 		public void run() {
 			GameState state = model.calculateNextFrame();
-	
+
 			if (view != null)
 				view.update(model.getParticipantList());
-			
+
 			// TODO networking
-			
+
 			// end game if needed
 			if (state == GameState.win) {
 				timer.cancel();

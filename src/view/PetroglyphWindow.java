@@ -33,9 +33,9 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 	private static final int BUTTON_WIDTH = 120;
 	private static final int BUTTON_HEIGHT = 25;
-	
+
 	private static final int TEXT_AREA_HEIGHT = 20;
-	
+
 	protected static final int WINDOW_BORDER = 10;
 
 	/** A reference to the MainController */
@@ -60,7 +60,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 	private JPanel startingLevelArea;
 	private JFormattedTextField startingLevelBox;
-	
+
 	private JButton launchButton;
 
 	/**
@@ -126,11 +126,10 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		ipArea.add(new JLabel("IP: "));
 		ipBox = new JTextField("");
 		ipBox.setPreferredSize(new Dimension(200, TEXT_AREA_HEIGHT));
-		ipBox.setEnabled(false);
 		ipArea.add(ipBox);
 		ipArea.setVisible(false);
 		lobbyPanel.add(ipArea, BorderLayout.NORTH);
-		
+
 		localPlayersArea = new JPanel();
 		localPlayersArea.add(new JLabel("Number of local players:"));
 		oneLocalPlayerButton = new JRadioButton("One");
@@ -142,7 +141,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		localPlayersArea.add(twoLocalPlayersButton);
 		localPlayersArea.setVisible(false);
 		lobbyPanel.add(localPlayersArea);
-		
+
 		startingLevelArea = new JPanel();
 		startingLevelArea.add(new JLabel("Start at level:"));
 		NumberFormatter numberFormatter = new NumberFormatter(NumberFormat.getIntegerInstance());
@@ -154,7 +153,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		startingLevelBox.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_AREA_HEIGHT));
 		startingLevelArea.add(startingLevelBox);
 		lobbyPanel.add(startingLevelArea);
-		
+
 		JPanel launchPanel = new JPanel();
 		launchButton = new JButton("Launch");
 		launchButton.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
@@ -172,7 +171,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		lobbyPanel.setVisible(false);
 		gameView.setVisible(true);
 	}
-	
+
 	protected void enterLobbyView() {
 		lobbyPanel.setVisible(true);
 		gameView.setVisible(false);
@@ -210,11 +209,10 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 			localPlayersArea.setVisible(false);
 			startingLevelArea.setVisible(false);
 		}
-		
+
 		else if (e.getSource() == oneLocalPlayerButton) {
 			twoLocalPlayersButton.setSelected(false);
-		}
-		else if (e.getSource() == twoLocalPlayersButton) {
+		} else if (e.getSource() == twoLocalPlayersButton) {
 			oneLocalPlayerButton.setSelected(false);
 		}
 

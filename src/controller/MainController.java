@@ -19,8 +19,17 @@ public class MainController implements KeyEventDispatcher {
 		window = new PetroglyphWindow(this, this);
 	}
 
-	public void startLocalGame(GameView view) {
-		server = new GameEngine(view, 3);
+	public void startLocalGame(GameView view, int startingLevel) {
+		server = new GameEngine(view, 3, startingLevel);
+		server.startRound();
+	}
+	
+	public void gameLoss() {
+		server = null;
+	}
+	
+	public void roundWin() {
+		server.startRound();
 	}
 
 	@Override

@@ -5,14 +5,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import controller.MainController;
 import model.SimpleParticipant;
 
 /**
@@ -20,7 +24,7 @@ import model.SimpleParticipant;
  * 
  * @author Sam Thayer
  */
-public class GameView extends JPanel {
+public class GameView extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 6118153292544416756L;
 
 	/** A panel to display the game area */
@@ -29,9 +33,21 @@ public class GameView extends JPanel {
 	/** A Text box to display the level number in */
 	private JTextField levelField;
 
-	/** The display for the Mammoth's HP brr */
+	/** The display for the Mammoth's HP bar */
 	private HPBar hpbar;
 
+	/** A reference to the controller */
+	private MainController controller;
+	
+	/** A reference to the main window */
+	private PetroglyphWindow mainWindow;
+
+	/** A button that allows the user to begin the next level after a win */
+	private JButton nextLevelButton;
+
+	/** A button that allows the user to return to the lobby after a loss */
+	private JButton endGameButton;
+	
 	/**
 	 * Creates a GameViewx
 	 * 
@@ -40,7 +56,10 @@ public class GameView extends JPanel {
 	 * @param inputHandler
 	 *            An object to pass key-press events to
 	 */
-	public GameView() {
+	public GameView(MainController controller, PetroglyphWindow mainWindow) {
+		this.controller = controller;
+		this.mainWindow = mainWindow;
+
 		BorderLayout contentLayout = new BorderLayout();
 		setLayout(contentLayout);
 
@@ -76,7 +95,7 @@ public class GameView extends JPanel {
 		sidePanel.add(levelPanel);
 
 		JPanel hpbarPanel = new JPanel();
-		hpbarPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30));
+		hpbarPanel.setBorder(BorderFactory.createEmptyBorder(0, 30, 0, 30 - PetroglyphWindow.WINDOW_BORDER));
 		hpbarPanel.setLayout(new BoxLayout(hpbarPanel, BoxLayout.Y_AXIS));
 		hpbar = new HPBar();
 		hpbar.setPreferredSize(new Dimension(100, 300));
@@ -90,12 +109,36 @@ public class GameView extends JPanel {
 		sidePanel.add(hpLabelPanel);
 
 		sidePanel.add(Box.createVerticalGlue());
+
+		JPanel buttonPanel = new JPanel();
+		sidePanel.add(buttonPanel);
+		
+		nextLevelButton = new JButton("Next Level");
+		nextLevelButton.addActionListener(this);
+		nextLevelButton.setVisible(false);
+		buttonPanel.add(nextLevelButton);
+		
+		endGameButton = new JButton("End Game");
+		endGameButton.addActionListener(this);
+		endGameButton.setVisible(false);
+		buttonPanel.add(endGameButton);
+
 		sidePanel.add(Box.createVerticalGlue());
 	}
-
+	
+	/** 
+	 * Prepares the display for a new round
+	 */
+	public void reset (int level) {
+		levelField.setText("" + level);
+		nextLevelButton.setVisible(false);
+		endGameButton.setVisible(false);
+		gamePanel.reset();
+	}
+	
 	/**
 	 * Updates the display, taking into account any changes to the GameWindow's
-	 * participants
+	 * participants.
 	 */
 	public void update(SimpleParticipant[] participants) {
 		gamePanel.update(participants);
@@ -105,7 +148,23 @@ public class GameView extends JPanel {
 	}
 
 	/**
-	 * A class to display the Mammoth's HP bar
+	 * Display a victory message to the user, and an option to start the next level.
+	 */
+	public void displayWin() {
+		gamePanel.displayWin();
+		nextLevelButton.setVisible(true);
+	}
+
+	/**
+	 * Display a defeat message to the user, and an option to return to the lobby.
+	 */
+	public void displayLoss() {
+		gamePanel.displayLoss();
+		endGameButton.setVisible(true);
+	}
+
+	/**
+	 * A class to display the Mammoth's HP bar.
 	 */
 	class HPBar extends JPanel {
 		private static final long serialVersionUID = -331939071445648092L;
@@ -126,6 +185,21 @@ public class GameView extends JPanel {
 
 			g.setColor(Color.black);
 			g.fillRect(0, 0, xSize, (int) ((1 - hpPercent) * ySize));
+		}
+	}
+
+	/**
+	 * When either "Next Level" or "End Game" is pressed
+	 */
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == nextLevelButton) {
+			controller.roundWin();
+		}
+		
+		else if (e.getSource() == endGameButton) {
+			controller.gameLoss();
+			mainWindow.enterLobbyView();
 		}
 	}
 }

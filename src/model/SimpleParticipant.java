@@ -33,6 +33,7 @@ public class SimpleParticipant {
 	private Color color;
 
 	private double hp;
+	private boolean conscious;
 
 	public SimpleParticipant(Participant original) {
 		this.hitbox = original.getHitbox();
@@ -46,6 +47,7 @@ public class SimpleParticipant {
 			hp = ((Mammoth) original).getHP();
 		} else if (original instanceof Caveman) {
 			type = ParticipantType.caveman;
+			conscious = ((Caveman) original).isConscious();
 		} else if (original instanceof Spear) {
 			type = ParticipantType.spear;
 		}
@@ -80,6 +82,13 @@ public class SimpleParticipant {
 			throw new IllegalStateException("Non-mammoth participant does not have a value for HP");
 		else
 			return hp;
+	}
+
+	public boolean isConscious() {
+		if (type != ParticipantType.caveman)
+			throw new IllegalStateException("Non-caveman participant does not have a value for conscious");
+		else
+			return conscious;
 	}
 
 }

@@ -7,15 +7,18 @@ import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.NumberFormat;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.text.NumberFormatter;
 
 import controller.MainController;
 
@@ -30,6 +33,10 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 	private static final int BUTTON_WIDTH = 120;
 	private static final int BUTTON_HEIGHT = 25;
+	
+	private static final int TEXT_AREA_HEIGHT = 20;
+	
+	protected static final int WINDOW_BORDER = 10;
 
 	/** A reference to the MainController */
 	private MainController controller;
@@ -44,8 +51,16 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	private JRadioButton hostGameButton;
 	private JRadioButton connectButton;
 
+	private JPanel ipArea;
 	private JTextField ipBox;
 
+	private JPanel localPlayersArea;
+	private JRadioButton oneLocalPlayerButton;
+	private JRadioButton twoLocalPlayersButton;
+
+	private JPanel startingLevelArea;
+	private JFormattedTextField startingLevelBox;
+	
 	private JButton launchButton;
 
 	/**
@@ -69,7 +84,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 		JPanel content = new JPanel();
 		BorderLayout contentLayout = new BorderLayout();
-		content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		content.setBorder(BorderFactory.createEmptyBorder(WINDOW_BORDER, WINDOW_BORDER, WINDOW_BORDER, WINDOW_BORDER));
 		content.setLayout(contentLayout);
 		this.add(content);
 
@@ -103,18 +118,43 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		connectButton.addActionListener(this);
 		buttonsArea.add(connectButton);
 
-		gameView = new GameView();
+		gameView = new GameView(controller, this);
 		gameView.setVisible(false);
 		content.add(gameView, BorderLayout.CENTER);
 
-		JPanel ipArea = new JPanel();
+		ipArea = new JPanel();
 		ipArea.add(new JLabel("IP: "));
-		ipBox = new JTextField("Nope");
-		ipBox.setPreferredSize(new Dimension(200, 20));
+		ipBox = new JTextField("");
+		ipBox.setPreferredSize(new Dimension(200, TEXT_AREA_HEIGHT));
 		ipBox.setEnabled(false);
 		ipArea.add(ipBox);
+		ipArea.setVisible(false);
 		lobbyPanel.add(ipArea, BorderLayout.NORTH);
-
+		
+		localPlayersArea = new JPanel();
+		localPlayersArea.add(new JLabel("Number of local players:"));
+		oneLocalPlayerButton = new JRadioButton("One");
+		oneLocalPlayerButton.setSelected(true);
+		oneLocalPlayerButton.addActionListener(this);
+		localPlayersArea.add(oneLocalPlayerButton);
+		twoLocalPlayersButton = new JRadioButton("Two");
+		twoLocalPlayersButton.addActionListener(this);
+		localPlayersArea.add(twoLocalPlayersButton);
+		localPlayersArea.setVisible(false);
+		lobbyPanel.add(localPlayersArea);
+		
+		startingLevelArea = new JPanel();
+		startingLevelArea.add(new JLabel("Start at level:"));
+		NumberFormatter numberFormatter = new NumberFormatter(NumberFormat.getIntegerInstance());
+		numberFormatter.setValueClass(Integer.class);
+		numberFormatter.setAllowsInvalid(false);
+		numberFormatter.setMinimum(1);
+		startingLevelBox = new JFormattedTextField(numberFormatter);
+		startingLevelBox.setText("1");
+		startingLevelBox.setPreferredSize(new Dimension(BUTTON_WIDTH, TEXT_AREA_HEIGHT));
+		startingLevelArea.add(startingLevelBox);
+		lobbyPanel.add(startingLevelArea);
+		
 		JPanel launchPanel = new JPanel();
 		launchButton = new JButton("Launch");
 		launchButton.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
@@ -124,14 +164,18 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 		// There is no reason that I should have to call these at the end of the
 		// constructor.
-		// Thank you swing.
 		revalidate();
 		repaint();
 	}
 
-	private void enterGameView() {
+	protected void enterGameView() {
 		lobbyPanel.setVisible(false);
 		gameView.setVisible(true);
+	}
+	
+	protected void enterLobbyView() {
+		lobbyPanel.setVisible(true);
+		gameView.setVisible(false);
 	}
 
 	@Override
@@ -139,34 +183,45 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		if (e.getSource() == localGameButton) {
 			hostGameButton.setSelected(false);
 			connectButton.setSelected(false);
-			ipBox.setEnabled(false);
-			ipBox.setEditable(false);
-			ipBox.setText("Nope");
+			ipArea.setVisible(false);
 			launchButton.setText("Launch");
+			localPlayersArea.setVisible(false);
+			startingLevelArea.setVisible(true);
 		}
 
 		else if (e.getSource() == hostGameButton) {
 			localGameButton.setSelected(false);
 			connectButton.setSelected(false);
-			ipBox.setEnabled(true);
+			ipArea.setVisible(true);
 			ipBox.setEditable(false);
 			ipBox.setText("TODO");
 			launchButton.setText("Launch");
+			localPlayersArea.setVisible(true);
+			startingLevelArea.setVisible(true);
 		}
 
 		else if (e.getSource() == connectButton) {
 			localGameButton.setSelected(false);
 			hostGameButton.setSelected(false);
-			ipBox.setEnabled(true);
+			ipArea.setVisible(true);
 			ipBox.setEditable(true);
 			ipBox.setText("");
 			launchButton.setText("Connect");
+			localPlayersArea.setVisible(false);
+			startingLevelArea.setVisible(false);
+		}
+		
+		else if (e.getSource() == oneLocalPlayerButton) {
+			twoLocalPlayersButton.setSelected(false);
+		}
+		else if (e.getSource() == twoLocalPlayersButton) {
+			oneLocalPlayerButton.setSelected(false);
 		}
 
 		else if (e.getSource() == launchButton) {
 			if (localGameButton.isSelected()) {
 				enterGameView();
-				controller.startLocalGame(gameView);
+				controller.startLocalGame(gameView, Integer.parseInt(startingLevelBox.getText()));
 			} else if (hostGameButton.isSelected()) {
 				// TODO
 			} else if (connectButton.isSelected()) {

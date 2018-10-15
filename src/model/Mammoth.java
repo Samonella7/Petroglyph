@@ -18,6 +18,9 @@ public class Mammoth extends Participant {
 	/** The length of a mammoth */
 	public static final double MAMMOTH_LENGTH = .185;
 
+	/** The color of a mammoth */
+	public static final Color MAMMOTH_COLOR = new Color(66, 33, 00);
+
 	/**
 	 * The length of the mammoths head.
 	 * 
@@ -25,6 +28,12 @@ public class Mammoth extends Participant {
 	 * head_length
 	 */
 	public static final double MAMMOTH_HEAD_LENGTH = MAMMOTH_LENGTH - MAMMOTH_WIDTH;
+
+	/**
+	 * If the mammoth is moving at this percent of its max speed, it turns to face
+	 * that direction
+	 */
+	public static final double MAMMOTH_TURN_PERCENT = .05;
 
 	/**
 	 * The number of frames for which the Mammoth will stay angry at a caveman that
@@ -37,8 +46,14 @@ public class Mammoth extends Participant {
 	 */
 	public static final double AGGRO_SCALAR = 2.2;
 
-	/** The amount of damage that mammoths takes per spear per frame */
+	/** The amount of damage that the mammoth takes per spear per frame */
 	public static final double SPEAR_DPF = .008;
+
+	/**
+	 * A value that influences the mammoth's movement. Making this value larger
+	 * makes the mammoth more likely to move at its maxSpeed.
+	 */
+	private static final double MAMMOTH_SCORE_MODIFIER = 1.8;
 
 	/** The maximum speed that this mammoth can move at */
 	private double maxSpeed;
@@ -71,7 +86,7 @@ public class Mammoth extends Participant {
 		this.x = .5 - MAMMOTH_WIDTH / 2;
 		this.y = .5 - MAMMOTH_LENGTH / 2;
 		this.direction = Direction.up;
-		this.color = new Color(66, 33, 00);
+		this.color = MAMMOTH_COLOR;
 		this.hp = 1;
 		aggros = new int[cavemen.length];
 	}
@@ -200,13 +215,17 @@ public class Mammoth extends Participant {
 
 		// speed of movement depends on how much better the new location would be
 		Vector vector = targetLoc.minus(currentLoc);
-		vector.scaleInto(maxSpeed * improvement);
+		double speed = maxSpeed * improvement * MAMMOTH_SCORE_MODIFIER;
+		if (speed > maxSpeed) {
+			speed = maxSpeed;
+		}
+		vector.scaleInto(speed);
 
 		x += vector.x;
 		y += vector.y;
 
 		// Also, turn to face that direction if the mammoth is moving very quickly
-		if (improvement > .05) {
+		if (speed > maxSpeed * MAMMOTH_TURN_PERCENT) {
 			turn(targetLoc);
 		}
 
@@ -244,9 +263,24 @@ public class Mammoth extends Participant {
 			w2 *= AGGRO_SCALAR;
 		}
 
+		// But unconcious cavemen have no weight
+		if (!cavemen[0].isConscious()) {
+			w0 = 0;
+		}
+		if (!cavemen[1].isConscious()) {
+			w1 = 0;
+		}
+		if (!cavemen[2].isConscious()) {
+			w2 = 0;
+		}
+
 		c0Loc.scaleBy(w0);
 		c1Loc.scaleBy(w1);
 		c2Loc.scaleBy(w2);
+
+		// A quick check to avoid silly exceptions:
+		if (0 == w0 + w1 + w2)
+			return new Vector(.5, .5);
 
 		Vector target = c0Loc.plus(c1Loc).plus(c2Loc);
 		target.scaleBy(1 / (w0 + w1 + w2));
@@ -259,16 +293,22 @@ public class Mammoth extends Participant {
 	 * This score is higher if the location is closer to more cavemen, and lower if
 	 * it is far from them.
 	 * 
-	 * Specifically, the score is 1 if all three cavemen are at that exact location,
-	 * and 0 if all cavemen are more than a third of the map away
+	 * Note that the maximum possible score is lower if some cavemen are
+	 * unconscious.
 	 */
 	private double scoreOf(Vector location) {
 		double totalScore = 0;
 		double totalPossible = 0;
 		for (int i = 0; i < cavemen.length; i++) {
+			if (!cavemen[i].isConscious()) {
+				totalPossible += 1;
+				continue;
+			}
+
 			Vector cLoc = new Vector(cavemen[i].getCenterX(), cavemen[i].getCenterY());
 			Vector difference = cLoc.minus(location);
 			double partialScore = 1.0 - difference.norm();
+
 			if (aggros[i] > 0) {
 				totalScore += partialScore * AGGRO_SCALAR;
 				totalPossible += AGGRO_SCALAR;
@@ -277,7 +317,10 @@ public class Mammoth extends Participant {
 				totalPossible += 1;
 			}
 		}
-		return Math.pow(totalScore / totalPossible, 2);
+
+		double completeScore = totalScore / totalPossible;
+
+		return Math.pow(completeScore, 2);
 	}
 
 	/**

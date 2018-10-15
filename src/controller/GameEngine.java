@@ -7,33 +7,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import model.Model;
+import model.Model.GameState;
 import model.Participant.Direction;
 import view.GameView;
 
-public class GameEngine extends TimerTask implements KeyEventDispatcher {
+public class GameEngine implements KeyEventDispatcher {
 
 	public static final int MILLIES_PER_FRAME = 1000 / 40;
-
-	/** The model that runs the game */
-	public Model model;
-
-	/**
-	 * A gui to display the game. May be null, in which case this GameEngine is
-	 * acting purely as a server
-	 */
-	public GameView view;
-
-	/** The game clock */
-	public Timer timer;
-
-	/** The direcional inputs that player 0 is currently pressing */
-	ArrayList<Direction> P0Inputs;
-
-	/** The direcional inputs that player 1 is currently pressing */
-	ArrayList<Direction> P1Inputs;
-
-	/** The direcional inputs that player 2 is currently pressing */
-	ArrayList<Direction> P2Inputs;
+	
+	public static final double INITIAL_MAMMOTH_SPEED = .05;
+	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .02;
 
 	/**
 	 * An array of 5 Virtual Key Codes that will be used as the controls for player
@@ -55,26 +38,72 @@ public class GameEngine extends TimerTask implements KeyEventDispatcher {
 	 */
 	public static int[] P2Keys = { KeyEvent.VK_U, KeyEvent.VK_H, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I };
 
-	public GameEngine(GameView gameView, int localPlayerCount) {
-		model = new Model(.11);
+	/** The model that runs the game */
+	public Model model;
+
+	/**
+	 * A gui to display the game. May be null, in which case this GameEngine is
+	 * acting purely as a server
+	 */
+	public GameView view;
+
+	/** The game clock */
+	public Timer timer;
+
+	/** The directional inputs that player 0 is currently pressing */
+	ArrayList<Direction> P0Inputs;
+
+	/** The directional inputs that player 1 is currently pressing */
+	ArrayList<Direction> P1Inputs;
+
+	/** The directional inputs that player 2 is currently pressing */
+	ArrayList<Direction> P2Inputs;
+	
+	/** The current level */
+	int level;
+
+	public GameEngine(GameView gameView, int localPlayerCount, int startingLevel) {
 		view = gameView;
+		
+		// -1 because it is incremented each time a level starts, even the first time:
+		level = startingLevel - 1;
 
 		P0Inputs = new ArrayList<Direction>();
 		if (localPlayerCount > 1)
 			P1Inputs = new ArrayList<Direction>();
 		if (localPlayerCount > 2)
 			P2Inputs = new ArrayList<Direction>();
-
+	}
+	
+	public void startRound() {
+		level++;
+		model = new Model(INITIAL_MAMMOTH_SPEED + level * MAMMOTH_SPEEDUP_PER_LEVEL);
+		
+		view.reset(level);
+		
 		timer = new Timer();
-		timer.scheduleAtFixedRate(this, 0, MILLIES_PER_FRAME);
+		timer.scheduleAtFixedRate(new newFrameHandler(), 0, MILLIES_PER_FRAME);
 	}
 
-	@Override
-	public void run() {
-		model.calculateNextFrame();
-
-		if (view != null)
-			view.update(model.getParticipantList());
+	class newFrameHandler extends TimerTask {
+		@Override
+		public void run() {
+			GameState state = model.calculateNextFrame();
+	
+			if (view != null)
+				view.update(model.getParticipantList());
+			
+			// TODO networking
+			
+			// end game if needed
+			if (state == GameState.win) {
+				timer.cancel();
+				view.displayWin();
+			} else if (state == GameState.loss) {
+				timer.cancel();
+				view.displayLoss();
+			}
+		}
 	}
 
 	@Override

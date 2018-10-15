@@ -20,6 +20,13 @@ public class Model {
 	private Spear[] spears;
 	/** A reference to the mammoth */
 	private Mammoth mammoth;
+	
+	/** A state that the game can be in */
+	public enum GameState {
+		running,
+		win,
+		loss
+	}
 
 	/**
 	 * Returns a representation of all the game's participants.
@@ -68,7 +75,7 @@ public class Model {
 	/**
 	 * Updates the model for the next frame of the game
 	 */
-	public void calculateNextFrame() {
+	public GameState calculateNextFrame() {
 		for (Caveman c : cavemen) {
 			c.move();
 		}
@@ -84,12 +91,54 @@ public class Model {
 				spears[i].state = SpearState.held;
 			}
 		}
+		
+		// Cavemen can revive each other 
+		for (int reviver = 0; reviver < cavemen.length; reviver++) {
+			if (!cavemen[reviver].isConscious()) {
+				continue;
+			}
+			for (int revivee = 0; revivee < cavemen.length; revivee++) {
+				if (revivee == reviver) {
+					continue;
+				}
+				if (!cavemen[revivee].isConscious() && cavemen[revivee].collidedWith(cavemen[reviver])) {
+					cavemen[revivee].setConscious(true);
+				}
+			}
+		}
 
+		// The Mammoth knocks Cavemen unconscious
+		for (int i = 0; i < cavemen.length; i++) {
+			if (cavemen[i].collidedWith(mammoth)) {
+				cavemen[i].setConscious(false);
+			}
+		}
+		
+		// Spears damage the mammoth
 		for (int i = 0; i < spears.length; i++) {
 			if (spears[i].state == SpearState.active && mammoth.collidedWith(spears[i])) {
 				mammoth.takeDamage(i);
 			}
 		}
+		
+		// You win if the mammoth's hp reaches 0
+		if (mammoth.getHP() == 0) {
+			return GameState.win;
+		}
+		
+		// You lose of all Cavemen are unconscious
+		int consciousCount = 0;
+		for (int i = 0; i < cavemen.length; i++) {
+			if (cavemen[i].isConscious()) {
+				consciousCount++;
+			}
+		}
+		if (consciousCount == 0) {
+			return GameState.loss;
+		}
+		
+		// otherwise, the game is still in progress
+		return GameState.running;
 	}
 
 	/**
@@ -115,6 +164,6 @@ public class Model {
 	 *            An identifier for a Caveman: 0, 1, or 2
 	 */
 	public void tryThrowSpear(int cavemanNumber) {
-		spears[cavemanNumber].tryLaunch();
+		cavemen[cavemanNumber].tryThrowSpear();
 	}
 }

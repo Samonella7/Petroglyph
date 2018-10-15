@@ -1,10 +1,16 @@
 package view;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import model.Caveman;
 import model.Hitbox;
 import model.Mammoth;
 import model.Participant.Direction;
@@ -27,6 +33,9 @@ class GamePanel extends JPanel {
 	private static final double MAMMOTH_HEAD_WIDTH = .5 * Mammoth.MAMMOTH_WIDTH;
 	private static final double MAMMOTH_HORN_OFFSET = .06 * Mammoth.MAMMOTH_LENGTH;
 	private static final double MAMMOTH_HORN_WIDTH = .08 * Mammoth.MAMMOTH_LENGTH;
+	
+	/// And one for drawing unconscious cavemen
+	private static final double CAVEMAN_X_WIDTH = .2 * Caveman.CAVEMAN_WIDTH;
 
 	/** The width (in pixels) of this panel last time it was painted */
 	private int panelWidth;
@@ -40,7 +49,36 @@ class GamePanel extends JPanel {
 
 	/** An array of the participants that should be drawn */
 	private SimpleParticipant[] participants;
+	
+	/** A message for victorious cavemen */
+	private JLabel victoryLabel;
+	
+	/** A message for defeated cavemen */
+	private JLabel defeatLabel;
 
+	/** Creates a GamePanel */
+	public GamePanel() {
+		Font f = new Font(null, Font.PLAIN, 32);
+		
+		victoryLabel = new JLabel("The tribe will eat well tonight!");
+		victoryLabel.setFont(f);
+		victoryLabel.setForeground(Color.white);
+		add(victoryLabel);
+		
+		defeatLabel = new JLabel("The mammoth will eat well tonight...");
+		defeatLabel.setFont(f);
+		defeatLabel.setForeground(Color.white);
+		add(defeatLabel);
+		
+		reset();
+	}
+	
+	/** Prepares this GamePanel for a new round */
+	public void reset() {
+		victoryLabel.setVisible(false);
+		defeatLabel.setVisible(false);
+	}
+	
 	/**
 	 * Recalculates field-variables that depend on the size of this panel
 	 */
@@ -60,13 +98,27 @@ class GamePanel extends JPanel {
 		this.participants = participants;
 		repaint();
 	}
+	
+	/**
+	 * Draws a victory message over the game area
+	 */
+	public void displayWin() {
+		victoryLabel.setVisible(true);
+	}
+	
+	/**
+	 * Draws a defeat message over the game area
+	 */
+	public void displayLoss() {
+		defeatLabel.setVisible(true);
+	}
 
 	/**
 	 * Redraws this panel, taking into account changes (if any) in the location of
 	 * the participants that this GamePanel draws
 	 */
 	@Override
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
 		recalculateConstants();
 
 		g.setColor(BACKGROUND_COLOR);
@@ -93,6 +145,14 @@ class GamePanel extends JPanel {
 		PixelBox box = new PixelBox(c.getHitbox(), panelWidth, panelHeight);
 		g.setColor(c.getColor());
 		g.fillRect(box.leftX, box.topY, box.width, box.length);
+		
+		if (!c.isConscious()) {
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setColor(Mammoth.MAMMOTH_COLOR);
+			g2.setStroke(new BasicStroke((int)(CAVEMAN_X_WIDTH * getWidth())));
+			g2.draw(new Line2D.Float(box.leftX, box.topY, box.rightX, box.bottomY));
+			g2.draw(new Line2D.Float(box.rightX, box.topY, box.leftX, box.bottomY));
+		}
 	}
 
 	/**

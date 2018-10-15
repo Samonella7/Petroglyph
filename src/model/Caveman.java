@@ -27,15 +27,28 @@ public class Caveman extends Participant {
 	/** A reference to this caveman's spear */
 	private Spear spear;
 
-	/** True if this caveman is currently moving, false otherwise */
+	/** True if this caveman is trying to move, false otherwise */
 	private boolean moving;
+	
+	/** True if this caveman is conscious (able to move around), false otherwise */
+	private boolean conscious;
 
+	/** Sets whether this caveman is conscious (able to move around) */
+	public void setConscious(boolean conscious) {
+		this.conscious = conscious;
+	}
+	
+	/** Returns true if this caveman is conscious (able to move around), false otherwise */
+	public boolean isConscious() {
+		return conscious;
+	}
+	
 	/** Returns a reference to this caveman's spear */
 	public Spear getSpear() {
 		return spear;
 	}
 
-	/** Sets whether this caveman is moving or not */
+	/** Sets whether this caveman is trying to move or not */
 	public void setMoving(boolean moving) {
 		this.moving = moving;
 	}
@@ -50,6 +63,7 @@ public class Caveman extends Participant {
 		this.direction = Direction.up;
 		this.color = color;
 		this.moving = false;
+		this.conscious = true;
 
 		this.spear = new Spear(x, y, color);
 	}
@@ -77,7 +91,7 @@ public class Caveman extends Participant {
 	 */
 	@Override
 	public void move() {
-		if (moving) {
+		if (moving && conscious) {
 			super.move(CAVEMAN_SPEED);
 		}
 
@@ -101,6 +115,17 @@ public class Caveman extends Participant {
 				spear.y = y + CAVEMAN_WIDTH;
 				break;
 			}
+		}
+	}
+
+	/**
+	 * If this spear is held by its (conscious) associated caveman, throw this spear. Does
+	 * nothing otherwise.
+	 */
+	public void tryThrowSpear() {
+		if (conscious && spear.state == SpearState.held) {
+			spear.state = SpearState.active;
+			spear.remainingAirtime = Spear.SPEAR_AIR_TIME;
 		}
 	}
 

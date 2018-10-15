@@ -75,15 +75,4 @@ public class Spear extends Participant {
 		}
 	}
 
-	/**
-	 * If this spear is held by its associated caveman, throw this spear. Does
-	 * nothing otherwise.
-	 */
-	public void tryLaunch() {
-		if (state == SpearState.held) {
-			state = SpearState.active;
-			remainingAirtime = SPEAR_AIR_TIME;
-		}
-	}
-
 }

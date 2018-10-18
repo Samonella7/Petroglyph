@@ -217,13 +217,13 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		}
 
 		else if (e.getSource() == launchButton) {
+			enterGameView();
 			if (localGameButton.isSelected()) {
-				enterGameView();
 				controller.startLocalGame(gameView, Integer.parseInt(startingLevelBox.getText()));
 			} else if (hostGameButton.isSelected()) {
-				// TODO
+				controller.startServer(gameView, Integer.parseInt(startingLevelBox.getText()));
 			} else if (connectButton.isSelected()) {
-				// TODO
+				controller.startClient(gameView);
 			}
 		}
 	}

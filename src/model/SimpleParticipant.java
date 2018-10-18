@@ -26,8 +26,6 @@ public class SimpleParticipant {
 	}
 
 	private Hitbox hitbox;
-	private double x;
-	private double y;
 	private Direction direction;
 	private ParticipantType type;
 	private Color color;
@@ -37,8 +35,6 @@ public class SimpleParticipant {
 
 	public SimpleParticipant(Participant original) {
 		this.hitbox = original.getHitbox();
-		this.x = original.getX();
-		this.y = original.getY();
 		this.direction = original.getDirection();
 		this.color = original.getColor();
 
@@ -53,16 +49,37 @@ public class SimpleParticipant {
 		}
 	}
 
+	public SimpleParticipant(String string) {
+		// No safety, if a bad string gets sent in here we'll just crash as gracelessly
+		// as possible
+
+		String[] input = string.split("[\\{\\}\\,]+");
+		
+		// input[0] is empty
+
+		double x = Double.parseDouble(input[1]);
+		double y = Double.parseDouble(input[2]);
+		double w = Double.parseDouble(input[3]);
+		double l = Double.parseDouble(input[4]);
+		this.hitbox = new Hitbox(x, y, w, l);
+
+		this.direction = Direction.valueOf(input[5]);
+		this.type = ParticipantType.valueOf(input[6]);
+		
+		int r = Integer.parseInt(input[7]);
+		int g = Integer.parseInt(input[8]);
+		int b = Integer.parseInt(input[9]);
+		this.color = new Color(r, g, b);
+		
+		if (this.type == ParticipantType.mammoth) {
+			this.hp = Double.parseDouble(input[10]);
+		} else if (this.type == ParticipantType.caveman) {
+			this.conscious = Boolean.parseBoolean(input[10]);
+		}
+	}
+
 	public Hitbox getHitbox() {
 		return hitbox;
-	}
-
-	public double getX() {
-		return x;
-	}
-
-	public double getY() {
-		return y;
 	}
 
 	public Direction getDirection() {
@@ -89,6 +106,20 @@ public class SimpleParticipant {
 			throw new IllegalStateException("Non-caveman participant does not have a value for conscious");
 		else
 			return conscious;
+	}
+
+	@Override
+	public String toString() {
+		String baseString = "{" + hitbox.toString() + "," + direction.toString() + "," + type.toString() + ","
+				+ color.getRed() + "," + color.getGreen() + "," + color.getBlue();
+
+		if (type == ParticipantType.mammoth) {
+			baseString += "," + hp;
+		} else if (type == ParticipantType.caveman) {
+			baseString += "," + conscious;
+		}
+
+		return baseString + "}";
 	}
 
 }

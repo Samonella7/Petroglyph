@@ -38,4 +38,12 @@ public class Hitbox {
 		this.width = other.width;
 		this.length = other.length;
 	}
+	
+	/**
+	 * Returns a String representation of this Hitbox
+	 */
+	@Override
+	public String toString() {
+		return "{" + leftX + "," + topY + "," + width + "," + length + "}";
+	}
 }

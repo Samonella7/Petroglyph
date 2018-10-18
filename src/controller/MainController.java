@@ -31,6 +31,14 @@ public class MainController implements KeyEventDispatcher {
 	public void roundWin() {
 		server.startRound();
 	}
+	
+	public void startServer(GameView view, int startingLevel) {
+		
+	}
+	
+	public void startClient(GameView view) {
+		
+	}
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent rawInput) {

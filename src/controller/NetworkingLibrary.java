@@ -55,9 +55,8 @@ public class NetworkingLibrary {
 		 * 
 		 * @param connection
 		 *            A {@link NetworkConnection} associated to this callback
-		 * @param connectionIsValid
-		 *            Whether or not this connection should be ended. If false, this
-		 *            connection has closed.
+		 * @param success
+		 *            Whether or not this connection has ended.
 		 * @param message
 		 *            The message sent from the connection. message does not contain the
 		 *            "messageTerminator" that was used to create this connection. If
@@ -97,7 +96,7 @@ public class NetworkingLibrary {
 		// There is nothing to do, this is just so instance can work as explained
 	}
 
-	/** 
+	/**
 	 * Returns this machine's IP address, or null if an error occurs.
 	 */
 	public static String getIP() {
@@ -124,6 +123,8 @@ public class NetworkingLibrary {
 	 * call closeListener with it, regardless of whether the listener is active or
 	 * not.
 	 * 
+	 * @param handler
+	 *            A functor to notify when a client connects.
 	 * @param messageTerminator
 	 *            A character that can be used to designate the end of messages.
 	 *            This character should not be used in ANY message passed to

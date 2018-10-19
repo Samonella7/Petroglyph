@@ -1,7 +1,5 @@
 package controller;
 
-import java.awt.KeyEventDispatcher;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,32 +9,12 @@ import model.Model.GameState;
 import model.Participant.Direction;
 import view.GameView;
 
-public class GameEngine implements KeyEventDispatcher {
+public class GameEngine {
 
 	public static final int MILLIES_PER_FRAME = 1000 / 40;
 
 	public static final double INITIAL_MAMMOTH_SPEED = .05;
 	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .015;
-
-	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 0. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
-	 */
-	public static int[] P0Keys = { KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
-			KeyEvent.VK_SHIFT };
-	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 1. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
-	 */
-	public static int[] P1Keys = { KeyEvent.VK_W, KeyEvent.VK_A, KeyEvent.VK_S, KeyEvent.VK_D, KeyEvent.VK_E };
-	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 2. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
-	 */
-	public static int[] P2Keys = { KeyEvent.VK_U, KeyEvent.VK_H, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I };
 
 	/** The model that runs the game */
 	public Model model;
@@ -62,19 +40,34 @@ public class GameEngine implements KeyEventDispatcher {
 	/** The current level */
 	int level;
 
-	public GameEngine(GameView gameView, int localPlayerCount, int startingLevel) {
+	/**
+	 * Creates a GameEngine that will start the game at the given level, and updates
+	 * the given gameView at every frame.
+	 */
+	public GameEngine(GameView gameView, int startingLevel) {
 		view = gameView;
 
 		// -1 because it is incremented each time a level starts, even the first time:
 		level = startingLevel - 1;
 
 		P0Inputs = new ArrayList<Direction>();
-		if (localPlayerCount > 1)
-			P1Inputs = new ArrayList<Direction>();
-		if (localPlayerCount > 2)
-			P2Inputs = new ArrayList<Direction>();
+		P1Inputs = new ArrayList<Direction>();
+		P2Inputs = new ArrayList<Direction>();
 	}
 
+	/**
+	 * Shuts down this GameEngine immediately. It is assumed that the caller will
+	 * update the gui as well.
+	 */
+	public void close() {
+		if (timer != null)
+			timer.cancel();
+	}
+
+	/**
+	 * Starts a new round of this game. This method should not be called while a
+	 * game is in progress.
+	 */
 	public void startRound() {
 		level++;
 		model = new Model(INITIAL_MAMMOTH_SPEED + level * MAMMOTH_SPEEDUP_PER_LEVEL);
@@ -85,7 +78,54 @@ public class GameEngine implements KeyEventDispatcher {
 		timer.scheduleAtFixedRate(new newFrameHandler(), 0, MILLIES_PER_FRAME);
 	}
 
+	/**
+	 * Has the identified caveman throw its spear if he is holding it.
+	 */
+	public void tryThrowSpear(int cavemanNumber) {
+		model.tryThrowSpear(cavemanNumber);
+	}
+
+	/**
+	 * Has the identified caveman begin trying to move in the given direction.
+	 */
+	public void beginMovement(int cavemanNumber, Direction direction) {
+		ArrayList<Direction> currentInputs = getPlayerInputArray(cavemanNumber);
+		if (!currentInputs.contains(direction)) {
+			currentInputs.add(0, direction);
+			model.directCaveman(cavemanNumber, direction, true);
+		}
+	}
+
+	/**
+	 * Has the identified caveman stop trying to move in the given direction.
+	 */
+	public void endMovement(int cavemanNumber, Direction direction) {
+		ArrayList<Direction> currentInputs = getPlayerInputArray(cavemanNumber);
+		if (currentInputs.remove(direction)) {
+			if (currentInputs.isEmpty()) {
+				model.directCaveman(cavemanNumber, direction, false);
+			} else {
+				model.directCaveman(cavemanNumber, currentInputs.get(0), true);
+			}
+		}
+	}
+
+	/**
+	 * Returns a list of directions that the given caveman is trying to move
+	 */
+	private ArrayList<Direction> getPlayerInputArray(int cavemanNumber) {
+		switch (cavemanNumber) {
+		case 0:
+			return P0Inputs;
+		case 1:
+			return P1Inputs;
+		default:
+			return P2Inputs;
+		}
+	}
+
 	class newFrameHandler extends TimerTask {
+		// This is the game clock; run() is called for every new frame.
 		@Override
 		public void run() {
 			GameState state = model.calculateNextFrame();
@@ -98,129 +138,12 @@ public class GameEngine implements KeyEventDispatcher {
 			// end game if needed
 			if (state == GameState.win) {
 				timer.cancel();
-				view.displayWin();
+				view.displayWin(GameEngine.this);
 			} else if (state == GameState.loss) {
 				timer.cancel();
 				view.displayLoss();
 			}
 		}
-	}
-
-	@Override
-	public boolean dispatchKeyEvent(KeyEvent rawInput) {
-		if (rawInput.getID() == KeyEvent.KEY_PRESSED)
-			handleKeyPress(rawInput.getKeyCode());
-		else if (rawInput.getID() == KeyEvent.KEY_RELEASED)
-			handleKeyRelease(rawInput.getKeyCode());
-
-		return false;
-	}
-
-	private void handleKeyPress(int keyCode) {
-		// There are two needed pieces of information: which player is the command for,
-		// and which command is it
-		int inputCode = lookForKeyMatch(keyCode, P0Keys);
-		int playerNum = 0;
-		ArrayList<Direction> playerInputArray = P0Inputs;
-
-		if (inputCode == -1 && P1Inputs != null) {
-			inputCode = lookForKeyMatch(keyCode, P1Keys);
-			playerNum = 1;
-			playerInputArray = P1Inputs;
-		}
-		if (inputCode == -1 && P2Inputs != null) {
-			inputCode = lookForKeyMatch(keyCode, P2Keys);
-			playerNum = 2;
-			playerInputArray = P2Inputs;
-		}
-
-		// Now that information is gathered, so pass it on to the model:
-
-		if (inputCode == -1)
-			return;
-
-		if (inputCode == 4) {
-			model.tryThrowSpear(playerNum);
-			return;
-		}
-
-		Direction direction;
-
-		switch (inputCode) {
-		case 0:
-			direction = Direction.up;
-			break;
-		case 1:
-			direction = Direction.left;
-			break;
-		case 2:
-			direction = Direction.down;
-			break;
-		default:
-			direction = Direction.right;
-			break;
-		}
-
-		if (!playerInputArray.contains(direction)) {
-			playerInputArray.add(0, direction);
-			model.directCaveman(playerNum, direction, true);
-		}
-	}
-
-	private void handleKeyRelease(int keyCode) {
-		int inputCode = lookForKeyMatch(keyCode, P0Keys);
-		int playerNum = 0;
-		ArrayList<Direction> playerInputArray = P0Inputs;
-
-		if (inputCode == -1 && P1Inputs != null) {
-			inputCode = lookForKeyMatch(keyCode, P1Keys);
-			playerNum = 1;
-			playerInputArray = P1Inputs;
-		}
-		if (inputCode == -1 && P2Inputs != null) {
-			inputCode = lookForKeyMatch(keyCode, P2Keys);
-			playerNum = 2;
-			playerInputArray = P2Inputs;
-		}
-
-		if (inputCode == -1 || inputCode == 4) {
-			// ignore release of the 'throw spear' button
-			return;
-		}
-
-		Direction direction;
-
-		switch (inputCode) {
-		case 0:
-			direction = Direction.up;
-			break;
-		case 1:
-			direction = Direction.left;
-			break;
-		case 2:
-			direction = Direction.down;
-			break;
-		default:
-			direction = Direction.right;
-			break;
-		}
-
-		if (playerInputArray.remove(direction)) {
-			if (playerInputArray.isEmpty()) {
-				model.directCaveman(playerNum, direction, false);
-			} else {
-				model.directCaveman(playerNum, playerInputArray.get(0), true);
-			}
-		}
-	}
-
-	private int lookForKeyMatch(int keyCode, int[] keyBindings) {
-		for (int i = 0; i < keyBindings.length; i++) {
-			if (keyBindings[i] == keyCode) {
-				return i;
-			}
-		}
-		return -1;
 	}
 
 }

@@ -15,12 +15,14 @@ import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.text.NumberFormatter;
 
 import controller.MainController;
+import controller.NetworkingLibrary;
 
 /**
  * The main window for the program. Starts as a lobby for connecting with
@@ -47,6 +49,8 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	/** A JPanel for displaying the lobby */
 	private JPanel lobbyPanel;
 
+	private String localIP;
+
 	private JRadioButton localGameButton;
 	private JRadioButton hostGameButton;
 	private JRadioButton connectButton;
@@ -61,7 +65,11 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	private JPanel startingLevelArea;
 	private JFormattedTextField startingLevelBox;
 
+	private JPanel statusPanel;
+	private JLabel statusLabel;
+
 	private JButton launchButton;
+	private JButton cancelButton;
 
 	/**
 	 * Creates a GameView
@@ -129,6 +137,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		ipArea.add(ipBox);
 		ipArea.setVisible(false);
 		lobbyPanel.add(ipArea, BorderLayout.NORTH);
+		localIP = NetworkingLibrary.getIP();
 
 		localPlayersArea = new JPanel();
 		localPlayersArea.add(new JLabel("Number of local players:"));
@@ -159,24 +168,151 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		launchButton.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
 		launchButton.addActionListener(this);
 		launchPanel.add(launchButton);
+		cancelButton = new JButton("Cancel");
+		cancelButton.setPreferredSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
+		// cancelButton's actionListener will be set when it is made visible
+		cancelButton.setVisible(false);
+		launchPanel.add(cancelButton);
 		lobbyPanel.add(launchPanel);
 
-		// There is no reason that I should have to call these at the end of the
-		// constructor.
+		statusPanel = new JPanel();
+		statusLabel = new JLabel();
+		statusPanel.add(statusLabel);
+		lobbyPanel.add(statusPanel);
+		statusPanel.setVisible(false);
+
+		// Why do I have to call these in the constructor? silly java
 		revalidate();
 		repaint();
 	}
 
+	/**
+	 * Hides the lobby display and opens the game display
+	 */
 	protected void enterGameView() {
 		lobbyPanel.setVisible(false);
 		gameView.setVisible(true);
 	}
 
+	/**
+	 * Hides the game display and opens the lobby display
+	 */
 	protected void enterLobbyView() {
 		lobbyPanel.setVisible(true);
 		gameView.setVisible(false);
 	}
 
+	/**
+	 * Prevents the user from switching between tabs of the lobby
+	 */
+	private void lockLobbySection() {
+		localGameButton.setEnabled(false);
+		hostGameButton.setEnabled(false);
+		connectButton.setEnabled(false);
+		oneLocalPlayerButton.setEnabled(false);
+		twoLocalPlayersButton.setEnabled(false);
+	}
+
+	/**
+	 * Allows the user to switch between tabs of the lobby (to be used after a call
+	 * to lockLobbySection())
+	 */
+	private void unlockLobbySection() {
+		localGameButton.setEnabled(true);
+		hostGameButton.setEnabled(true);
+		connectButton.setEnabled(true);
+		oneLocalPlayerButton.setEnabled(true);
+		twoLocalPlayersButton.setEnabled(true);
+	}
+
+	/**
+	 * Configures the lobby for a wait for a network connection. This mainly means
+	 * locking down features that were used to configure the connection.
+	 */
+	private void beginWaitingForConnection() {
+		statusPanel.setVisible(true);
+		statusLabel.setText("Waiting for a connection...");
+		launchButton.setText("Launch");
+		launchButton.setEnabled(false);
+		cancelButton.setVisible(true);
+		lockLobbySection();
+
+		cancelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				stopWaitingForConnection();
+				controller.cancelConnection();
+			}
+		});
+	}
+
+	/**
+	 * Notifies the user that a client has connected to their server. This should
+	 * only be called while the program is waiting for clients to connect.
+	 */
+	public void newConnectionAsServer(int playersStillNeeded) {
+		statusLabel.setText("Another player connected. Wating for " + playersStillNeeded + " more...");
+	}
+
+	/**
+	 * Notifies the user that they successfully connected to a server. This should
+	 * only be called when the program was connecting to a server.
+	 */
+	public void connectedAsClient() {
+		statusLabel.setText("Connected. Waiting for host to launch game...");
+	}
+
+	/**
+	 * Notifies the user that they were unable to connect to a server, and opens
+	 * options for them to try again or do something else. This should only be
+	 * called when the program was connecting to a server.
+	 */
+	public void failedToConnectAsClient() {
+		stopWaitingForConnection();
+		JOptionPane.showMessageDialog(null, "Failed to connect. Are you sure that there is a server running at "
+				+ ipBox.getText() + "? Are you sure that this game has internet access?");
+	}
+
+	/**
+	 * Unfreezes features related to configuring network connections. Specifically,
+	 * undoes the effects of beginWaitingForConnection()
+	 * 
+	 * @param launchButtonText
+	 */
+	private void stopWaitingForConnection() {
+		unlockLobbySection();
+		statusPanel.setVisible(false);
+		launchButton.setEnabled(true);
+		cancelButton.setVisible(false);
+
+		if (hostGameButton.isSelected())
+			launchButton.setText("Open Server");
+		else
+			launchButton.setText("Connect");
+
+		ActionListener oldListener = cancelButton.getActionListeners()[0];
+		cancelButton.removeActionListener(oldListener);
+	}
+
+	/**
+	 * Notifies the user that a connection error occurred, and closes gui elements
+	 * for any active operation. This is a general purpose method that can be called
+	 * any time while the user is connected to another instance of Petroglyph.
+	 */
+	public void lostConnection() {
+		JOptionPane.showMessageDialog(null,
+				"A connection error occured. Either you lost internet access, or one of the other players disconnected.");
+		if (lobbyPanel.isVisible()) {
+			stopWaitingForConnection();
+		}
+
+		else {
+			enterLobbyView();
+			// TODO?
+		}
+	}
+
+	// This is the actionListener for most buttons
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == localGameButton) {
@@ -193,8 +329,12 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 			connectButton.setSelected(false);
 			ipArea.setVisible(true);
 			ipBox.setEditable(false);
-			ipBox.setText("TODO");
-			launchButton.setText("Launch");
+			if (localIP == null) {
+				ipBox.setText("error");
+			} else {
+				ipBox.setText(localIP);
+			}
+			launchButton.setText("Open Server");
 			localPlayersArea.setVisible(true);
 			startingLevelArea.setVisible(true);
 		}
@@ -217,14 +357,35 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		}
 
 		else if (e.getSource() == launchButton) {
+			launchButtonPressed();
+		}
+	}
+
+	/**
+	 * A helper method to be called when the launch button is pressed
+	 */
+	private void launchButtonPressed() {
+		// behavior depends on which tab the user was in
+		
+		if (localGameButton.isSelected()) {
 			enterGameView();
-			if (localGameButton.isSelected()) {
-				controller.startLocalGame(gameView, Integer.parseInt(startingLevelBox.getText()));
-			} else if (hostGameButton.isSelected()) {
-				controller.startServer(gameView, Integer.parseInt(startingLevelBox.getText()));
-			} else if (connectButton.isSelected()) {
-				controller.startClient(gameView);
+			controller.startLocalGame(gameView, Integer.parseInt(startingLevelBox.getText()));
+		}
+
+		else if (hostGameButton.isSelected()) {
+			int localPlayerCount = oneLocalPlayerButton.isSelected() ? 1 : 2;
+
+			if (controller.startServer(localPlayerCount)) {
+				beginWaitingForConnection();
+			} else {
+				JOptionPane.showMessageDialog(null,
+						"A connection error occured. Are you sure that this game has access to the internet?");
 			}
+		}
+
+		else if (connectButton.isSelected()) {
+			beginWaitingForConnection();
+			controller.startClient(ipBox.getText());
 		}
 	}
 

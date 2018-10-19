@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import controller.GameEngine;
 import controller.MainController;
 import model.SimpleParticipant;
 
@@ -114,7 +115,7 @@ public class GameView extends JPanel implements ActionListener {
 		sidePanel.add(buttonPanel);
 
 		nextLevelButton = new JButton("Next Level");
-		nextLevelButton.addActionListener(this);
+		// Action listener will be added when the button is made visible
 		nextLevelButton.setVisible(false);
 		buttonPanel.add(nextLevelButton);
 
@@ -149,10 +150,19 @@ public class GameView extends JPanel implements ActionListener {
 
 	/**
 	 * Display a victory message to the user, and an option to start the next level.
+	 * When the user selects the option, startRound will be called on the given
+	 * GameEngine.
 	 */
-	public void displayWin() {
+	public void displayWin(GameEngine engine) {
 		gamePanel.displayWin();
 		nextLevelButton.setVisible(true);
+		nextLevelButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				engine.startRound();
+				nextLevelButton.removeActionListener(this);
+			}
+		});
 	}
 
 	/**
@@ -193,12 +203,8 @@ public class GameView extends JPanel implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == nextLevelButton) {
-			controller.roundWin();
-		}
-
-		else if (e.getSource() == endGameButton) {
-			controller.gameLoss();
+		if (e.getSource() == endGameButton) {
+			controller.gameOver();
 			mainWindow.enterLobbyView();
 		}
 	}

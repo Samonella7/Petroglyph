@@ -1,38 +1,35 @@
 package controller;
 
-import java.util.HashSet;
-import java.util.Scanner;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import controller.NetworkingLibrary.NetworkConnectionHandler;
 import controller.NetworkingLibrary.NetworkUpdateHandler;
+import view.PetroglyphWindow;
 import controller.NetworkingLibrary.NetworkConnection;
 import controller.NetworkingLibrary.NetworkListener;
 
 public class Server implements NetworkConnectionHandler, NetworkUpdateHandler {
-	public static void main(String[] args) {
-		boolean loop = true;
-		try (Scanner in = new Scanner(System.in)) {
-			while (loop) {
-				Server s = new Server();
-				System.out.println("Server launched at " + NetworkingLibrary.getIP() + ". Press enter to terminate");
-				in.nextLine();
-
-				s.close();
-
-				System.out.println("To start a new server, enter 'yes'\nTo terminate program, enter anything else");
-				if (!in.nextLine().equals("yes"))
-					loop = false;
-			}
-		}
-	}
-
 	private NetworkListener listener;
-	private HashSet<NetworkConnection> allClients;
+	private ArrayList<NetworkConnection> allClients;
+	private int remotePlayersNeeded;
 
-	public Server() {
-		allClients = new HashSet<NetworkConnection>();
+	private PetroglyphWindow window;
+	private MainController controller;
 
+	/**
+	 * @throws IOException
+	 */
+	public Server(PetroglyphWindow window, MainController controller, int localPlayerCount) throws IOException {
+		this.window = window;
+		this.controller = controller;
+		allClients = new ArrayList<NetworkConnection>();
+		remotePlayersNeeded = 3 - localPlayerCount;
 		listener = NetworkingLibrary.openServer(this, '\n');
+
+		if (listener == null) {
+			throw new IOException();
+		}
 	}
 
 	public void close() {
@@ -46,24 +43,22 @@ public class Server implements NetworkConnectionHandler, NetworkUpdateHandler {
 	public void initialConnectionUpdate(NetworkConnection connection, boolean success) {
 		if (success) {
 			allClients.add(connection);
-			System.out.println("Accepted new client");
+			window.newConnectionAsServer(remotePlayersNeeded - allClients.size());
 			NetworkingLibrary.getData(connection, this);
-		} else {
-			System.out.println("A client failed to connect, or the server listener failed");
 		}
-		NetworkingLibrary.resumeAcceptingClients(listener);
+
+		if (allClients.size() == remotePlayersNeeded) {
+			// TODO
+		} else {
+			NetworkingLibrary.resumeAcceptingClients(listener);
+		}
 	}
 
 	@Override
 	public void connectionUpdate(NetworkConnection connection, boolean success, String message) {
 		if (!success) {
 			allClients.remove(connection);
-			System.out.println("A client disconnected");
-		} else {
-			for (NetworkConnection s : allClients) {
-				NetworkingLibrary.send(s, message);
-			}
-			NetworkingLibrary.getData(connection, this);
+			controller.lostConnection();
 		}
 	}
 }

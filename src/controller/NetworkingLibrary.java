@@ -11,6 +11,10 @@ import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.channels.WritePendingException;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This is a library of static methods for network connections. <br>
@@ -293,26 +297,48 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * Sends the given data across the given connection
-	 * 
-	 * @throws WritePendingException
-	 *             If a previous write has not completed
+	 * Sends the given data across the given connection.
 	 */
 	public static void send(NetworkConnection connection, String data) {
-		ByteBuffer message = StandardCharsets.UTF_8.encode(data + connection.messageTerminator);
+		// This method doesn't actually send messages, it only adds them to the
+		// messagesToSend queue and starts up sendNextMessage()
+		connection.messagesToSend.add(data);
 
+		connection.sendLock.lock();
+		if (connection.messagesToSend.size() == 1) {
+			sendNextMessage(connection);
+		}
+		connection.sendLock.unlock();
+	}
+
+	/**
+	 * A Helper method that will send messages one at a time until connection has no
+	 * messages left to send.
+	 */
+	private static void sendNextMessage(NetworkConnection connection) {
+		// don't remove from the queue until the send has finished
+		String data = connection.messagesToSend.peek();
+		ByteBuffer message = StandardCharsets.UTF_8.encode(data + connection.messageTerminator);
 		connection.socket.write(message, connection, new CompletionHandler<Integer, NetworkConnection>() {
-			// Don't do anything in response. For the kind of simple program that this
-			// library is designed for:
-			// a) the program doesn't care for confirmation that messages were sent
-			// b) if the connection fails, it is sufficient to find out next time they call
-			// getData
 			@Override
 			public void completed(Integer result, NetworkConnection connectionState) {
+				connectionState.sendLock.lock();
+				// now we can remove the message:
+				connectionState.messagesToSend.poll();
+				// and possibly start the next:
+				if (!connectionState.messagesToSend.isEmpty()) {
+					sendNextMessage(connectionState);
+				}
+				connectionState.sendLock.unlock();
 			}
 
 			@Override
 			public void failed(Throwable exc, NetworkConnection connectionState) {
+				// Normally the user doesn't care about confirmation that messages sent, but if
+				// one failed they should know
+				if (connectionState.isValid) {
+					connectionState.messageCallback.connectionUpdate(connectionState, false, null);
+				}
 			}
 		});
 	}
@@ -350,6 +376,12 @@ public class NetworkingLibrary {
 		/** A functor to be used when the connection is initiated */
 		private NetworkConnectionHandler connectionCallback;
 
+		/** A queue of Strings that the user wants sent */
+		private Queue<String> messagesToSend;
+		
+		/** A lock to prevent race conditions on messagesToSend */
+		private Lock sendLock;
+
 		/**
 		 * The small buffer which the socket will save data to. From here, data should
 		 * be promptly moved to "data," a StringBuilder
@@ -382,6 +414,8 @@ public class NetworkingLibrary {
 			this.largeBuffer = new StringBuilder();
 			this.isValid = true;
 			this.messageTerminator = messageTerminator;
+			this.messagesToSend = new LinkedList<String>();
+			this.sendLock = new ReentrantLock();
 		}
 	}
 

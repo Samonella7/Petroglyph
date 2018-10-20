@@ -237,14 +237,7 @@ public class Server implements NetworkConnectionHandler, NetworkUpdateHandler, G
 		message.deleteCharAt(message.length() - 1);
 
 		for (NetworkConnection c : allClients) {
-			try {
-				NetworkingLibrary.send(c, NEW_FRAME_KEY + message.toString());
-			} catch (WritePendingException e) {
-				// There is only an exception here in unusual cases like connection hiccups
-				// (or debugging the code). We'll just let the clients skip some frames.
-				// Since the message contains all the Participants' raw locations, they'll be
-				// caught up to speed on the next frame that makes it through.
-			}
+			NetworkingLibrary.send(c, NEW_FRAME_KEY + message.toString());
 		}
 	}
 

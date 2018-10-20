@@ -349,7 +349,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	 */
 	public void lostConnection() {
 		JOptionPane.showMessageDialog(null,
-				"A connection error occured. Either you lost internet access, or one of the other players disconnected.");
+				"A connection error occured. Either you lost intearnet access, or one of the other players disconnected.");
 		if (lobbyPanel.isVisible()) {
 			stopWaitingForConnection();
 		}

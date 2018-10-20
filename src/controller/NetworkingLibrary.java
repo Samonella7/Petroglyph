@@ -316,11 +316,11 @@ public class NetworkingLibrary {
 	 * Sends the given data across the given connection.
 	 */
 	public static void send(NetworkConnection connection, String data) {
+		connection.sendLock.lock();
 		// This method doesn't actually send messages, it only adds them to the
 		// messagesToSend queue and starts up sendNextMessage()
 		connection.messagesToSend.add(data);
 
-		connection.sendLock.lock();
 		if (connection.messagesToSend.size() == 1) {
 			sendNextMessage(connection);
 		}

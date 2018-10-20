@@ -6,7 +6,6 @@ import model.SimpleParticipant;
 import model.Participant.Direction;
 import view.PetroglyphWindow;
 
-import java.nio.channels.ReadPendingException;
 import java.util.ArrayList;
 
 import controller.NetworkingLibrary.NetworkConnection;
@@ -70,14 +69,10 @@ public class Client implements NetworkConnectionHandler, NetworkUpdateHandler {
 		}
 
 		// Even if this is the first message, it still has valid data:
-		if (newMessage(message)) {
-			// If parsing was successful, get ready for the next message
-			NetworkingLibrary.getData(connection, this);
-		} else {
-			// Otherwise, abort the game
-			close();
-			controller.lostConnection();
-		}
+		newMessage(message);
+		// Ignore the return value. As per the Petroglyph protocol, malformed messages
+		// are ignored.
+		NetworkingLibrary.getData(connection, this);
 	}
 
 	/**

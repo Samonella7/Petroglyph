@@ -252,7 +252,7 @@ public class NetworkingLibrary {
 	 */
 	public static void getData(NetworkConnection connection, NetworkUpdateHandler callback) {
 		connection.messageCallback = callback;
-		
+
 		connection.readLock.lock();
 		if (!connection.isReading) {
 			connection.isReading = true;
@@ -260,7 +260,7 @@ public class NetworkingLibrary {
 		}
 		connection.readLock.unlock();
 	}
-	
+
 	/** A helper class to accept callbacks from socket reads */
 	private class readHelper implements CompletionHandler<Integer, NetworkConnection> {
 		@Override
@@ -268,7 +268,7 @@ public class NetworkingLibrary {
 			connectionState.readLock.lock();
 			connectionState.isReading = false;
 			connectionState.readLock.unlock();
-			
+
 			// If, in between the user's call to getData and this callback being triggered,
 			// the user called closeConnection, ignore this message
 			if (!connectionState.isValid) {
@@ -283,8 +283,7 @@ public class NetworkingLibrary {
 			}
 			// Otherwise, get the message out of tempBuffer and into a better spot:
 			connectionState.tempBuffer.flip();
-			connectionState.largeBuffer
-					.append(StandardCharsets.UTF_8.decode(connectionState.tempBuffer).toString());
+			connectionState.largeBuffer.append(StandardCharsets.UTF_8.decode(connectionState.tempBuffer).toString());
 			connectionState.tempBuffer.clear();
 
 			// Now search through the large buffer to see if there is a complete message (or
@@ -304,7 +303,7 @@ public class NetworkingLibrary {
 			connectionState.readLock.lock();
 			connectionState.isReading = false;
 			connectionState.readLock.unlock();
-			
+
 			if (!connectionState.isValid) {
 				return;
 			}
@@ -394,16 +393,16 @@ public class NetworkingLibrary {
 
 		/** A queue of Strings that the user wants sent */
 		private Queue<String> messagesToSend;
-		
+
 		/** A lock to prevent race conditions on messagesToSend */
 		private Lock sendLock;
 
 		/** Tells whether the socket is currently reading or not */
 		private boolean isReading;
-		
+
 		/** A lock to prevent race conditions on isReading */
 		private Lock readLock;
-		
+
 		/**
 		 * The small buffer which the socket will save data to. From here, data should
 		 * be promptly moved to "data," a StringBuilder

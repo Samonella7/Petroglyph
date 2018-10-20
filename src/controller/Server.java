@@ -1,7 +1,6 @@
 package controller;
 
 import java.io.IOException;
-import java.nio.channels.WritePendingException;
 import java.util.ArrayList;
 
 import controller.NetworkingLibrary.NetworkConnectionHandler;
@@ -26,16 +25,17 @@ import controller.NetworkingLibrary.NetworkListener;
  * game.</li>
  * <li>Unexpected disconnects<br>
  * If at any time any connection is broken, the game is considered unplayable
- * and all other connections, if any, are immediately closed. The same is true
- * if any malformed messages are received by either the client or the server;
- * the receiving end should immediately close the connection.
+ * and all other connections, if any, are immediately closed.
  * <li>Message format<br>
  * All messages, either server-to-client or client-to-server, follow a simple
  * format. Messages start with a key that identifies the message's type. All
  * keys have the same length, which is defined by a static constant in the
  * Server class. The key is followed by zero or more bytes, as defined by the
  * message type. Finally, all messages are terminated by the same character,
- * which is defined by a static constant in the Server class.</li>
+ * which is defined by a static constant in the Server class.<br>
+ * However, due to rare but seemingly unavoidable corruption of data during
+ * network transfer, malformed messages should be ignored. They are not cause
+ * for terminating the connection.</li>
  * <li>When the game launches<br>
  * The server will send a START_NEW_ROUND message (see below). From this point
  * until the game finishes, both the server and client may send any number of
@@ -173,12 +173,10 @@ public class Server implements NetworkConnectionHandler, NetworkUpdateHandler, G
 			return;
 		}
 
-		if (newMessage(connection, message)) {
-			NetworkingLibrary.getData(connection, this);
-		} else {
-			close();
-			controller.lostConnection();
-		}
+		newMessage(connection, message);
+		// Ignore the return value. As per the Petroglyph protocol, malformed messages
+		// are ignored.
+		NetworkingLibrary.getData(connection, this);
 
 	}
 

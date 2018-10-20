@@ -45,6 +45,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that can be used to process updates to SocketConnections
+	 * 
 	 * @author Sam Thayer
 	 */
 	public interface NetworkUpdateHandler {
@@ -65,6 +66,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that can be used to process new clients
+	 * 
 	 * @author Sam Thayer
 	 */
 	public interface NetworkConnectionHandler {
@@ -217,12 +219,21 @@ public class NetworkingLibrary {
 			client.connect(hostAddress, connectionState, new CompletionHandler<Void, NetworkConnection>() {
 				@Override
 				public void completed(Void result, NetworkConnection connectionState) {
-					connectionState.connectionCallback.initialConnectionUpdate(connectionState, true);
+					// If, in between the user's call to getData and this callback being triggered,
+					// the user called closeConnection, ignore this message
+					if (connectionState.isValid) {
+						connectionState.connectionCallback.initialConnectionUpdate(connectionState, true);
+					}
+
 				}
 
 				@Override
 				public void failed(Throwable exc, NetworkConnection attachment) {
-					connectionState.connectionCallback.initialConnectionUpdate(null, false);
+					// If, in between the user's call to getData and this callback being triggered,
+					// the user called closeConnection, ignore this message
+					if (connectionState.isValid) {
+						connectionState.connectionCallback.initialConnectionUpdate(null, false);
+					}
 				}
 
 			});
@@ -324,6 +335,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that represents a connection, either to a server or to a client.
+	 * 
 	 * @author Sam Thayer
 	 */
 	public class NetworkConnection {
@@ -375,6 +387,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that represents a server that listens for clients.
+	 * 
 	 * @author Sam Thayer
 	 */
 	public class NetworkListener {

@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import controller.GameUpdateHandler;
 import controller.GameEngine;
 import controller.MainController;
 import model.SimpleParticipant;
@@ -25,7 +26,7 @@ import model.SimpleParticipant;
  * 
  * @author Sam Thayer
  */
-public class GameView extends JPanel implements ActionListener {
+public class GameView extends JPanel implements ActionListener, GameUpdateHandler {
 	private static final long serialVersionUID = 6118153292544416756L;
 
 	/** A panel to display the game area */
@@ -127,48 +128,40 @@ public class GameView extends JPanel implements ActionListener {
 		sidePanel.add(Box.createVerticalGlue());
 	}
 
-	/**
-	 * Prepares the display for a new round
-	 */
-	public void reset(int level) {
+	@Override
+	public void startRound(int level) {
 		levelField.setText("" + level);
 		nextLevelButton.setVisible(false);
 		endGameButton.setVisible(false);
 		gamePanel.reset();
 	}
 
-	/**
-	 * Updates the display, taking into account any changes to the GameWindow's
-	 * participants.
-	 */
-	public void update(SimpleParticipant[] participants) {
+	@Override
+	public void newFrame(SimpleParticipant[] participants) {
 		gamePanel.update(participants);
 
 		hpbar.hpPercent = participants[0].getHP();
 		hpbar.repaint();
 	}
 
-	/**
-	 * Display a victory message to the user, and an option to start the next level.
-	 * When the user selects the option, startRound will be called on the given
-	 * GameEngine.
-	 */
-	public void displayWin(GameEngine engine) {
+	@Override
+	public void roundWin(GameEngine engine) {
 		gamePanel.displayWin();
-		nextLevelButton.setVisible(true);
-		nextLevelButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				engine.startRound();
-				nextLevelButton.removeActionListener(this);
-			}
-		});
+		
+		if (engine != null) {
+			nextLevelButton.setVisible(true);
+			nextLevelButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					engine.startRound();
+					nextLevelButton.removeActionListener(this);
+				}
+			});
+		}
 	}
 
-	/**
-	 * Display a defeat message to the user, and an option to return to the lobby.
-	 */
-	public void displayLoss() {
+	@Override
+	public void roundLoss() {
 		gamePanel.displayLoss();
 		endGameButton.setVisible(true);
 	}

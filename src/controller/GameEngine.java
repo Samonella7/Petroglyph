@@ -7,23 +7,22 @@ import java.util.TimerTask;
 import model.Model;
 import model.Model.GameState;
 import model.Participant.Direction;
-import view.GameView;
 
 public class GameEngine {
 
 	public static final int MILLIES_PER_FRAME = 1000 / 40;
 
-	public static final double INITIAL_MAMMOTH_SPEED = .05;
-	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .015;
+	public static final double INITIAL_MAMMOTH_SPEED = .008;
+	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .004;
 
 	/** The model that runs the game */
 	public Model model;
 
 	/**
-	 * A gui to display the game. May be null, in which case this GameEngine is
-	 * acting purely as a server
+	 * An array of objects that should be updated for every frame and at the end of
+	 * rounds.
 	 */
-	public GameView view;
+	private GameUpdateHandler[] updateArray;
 
 	/** The game clock */
 	public Timer timer;
@@ -44,8 +43,8 @@ public class GameEngine {
 	 * Creates a GameEngine that will start the game at the given level, and updates
 	 * the given gameView at every frame.
 	 */
-	public GameEngine(GameView gameView, int startingLevel) {
-		view = gameView;
+	public GameEngine(GameUpdateHandler[] updateArray, int startingLevel) {
+		this.updateArray = updateArray;
 
 		// -1 because it is incremented each time a level starts, even the first time:
 		level = startingLevel - 1;
@@ -65,14 +64,16 @@ public class GameEngine {
 	}
 
 	/**
-	 * Starts a new round of this game. This method should not be called while a
-	 * game is in progress.
+	 * Starts a new round of the game. This method should not be called while a game
+	 * is in progress.
 	 */
 	public void startRound() {
 		level++;
 		model = new Model(INITIAL_MAMMOTH_SPEED + level * MAMMOTH_SPEEDUP_PER_LEVEL);
 
-		view.reset(level);
+		for (GameUpdateHandler f : updateArray) {
+			f.startRound(level);
+		}
 
 		timer = new Timer();
 		timer.scheduleAtFixedRate(new newFrameHandler(), 0, MILLIES_PER_FRAME);
@@ -130,18 +131,18 @@ public class GameEngine {
 		public void run() {
 			GameState state = model.calculateNextFrame();
 
-			if (view != null)
-				view.update(model.getParticipantList());
-
-			// TODO networking
+			for (GameUpdateHandler f : updateArray)
+				f.newFrame(model.getParticipantList());
 
 			// end game if needed
 			if (state == GameState.win) {
 				timer.cancel();
-				view.displayWin(GameEngine.this);
+				for (GameUpdateHandler f : updateArray)
+					f.roundWin(GameEngine.this);
 			} else if (state == GameState.loss) {
 				timer.cancel();
-				view.displayLoss();
+				for (GameUpdateHandler f : updateArray)
+					f.roundLoss();
 			}
 		}
 	}

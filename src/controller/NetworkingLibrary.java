@@ -9,22 +9,19 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.WritePendingException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * This is a library of static methods for network connections.
- * 
+ * This is a library of static methods for network connections. <br>
  * The idea is that any program in need of a Tcp Server and Client can use these
  * methods and never need to know what a TcpListener or Socket is; they should
- * never use a method or object in System.Net.Sockets
- * 
+ * never use a method or object in System.Net.Sockets <br>
  * Instead, they only need to know how to use these relatively simple methods.
- * There are just a few things to understand:
- * 
+ * There are just a few things to understand: <br>
  * 1) The objects SocketState and Listener state should be thought of as your
  * connections; when you get one from one of these methods, save a reference so
- * you can call more methods with it.
- * 
+ * you can call more methods with it. <br>
  * 2) How to implement SocketCallback()s: There are a few things that every
  * method used as a SocketCallback should do: First, check whether
  * connectionIsValid (the boolean parameter). If it is not, understand that this
@@ -48,6 +45,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that can be used to process updates to SocketConnections
+	 * @author Sam Thayer
 	 */
 	public interface NetworkUpdateHandler {
 		/**
@@ -67,6 +65,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that can be used to process new clients
+	 * @author Sam Thayer
 	 */
 	public interface NetworkConnectionHandler {
 		/**
@@ -282,7 +281,12 @@ public class NetworkingLibrary {
 		});
 	}
 
-	/** Sends the given data across the given connection */
+	/**
+	 * Sends the given data across the given connection
+	 * 
+	 * @throws WritePendingException
+	 *             If a previous write has not completed
+	 */
 	public static void send(NetworkConnection connection, String data) {
 		ByteBuffer message = StandardCharsets.UTF_8.encode(data + connection.messageTerminator);
 
@@ -320,6 +324,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that represents a connection, either to a server or to a client.
+	 * @author Sam Thayer
 	 */
 	public class NetworkConnection {
 		/**
@@ -370,6 +375,7 @@ public class NetworkingLibrary {
 
 	/**
 	 * An object that represents a server that listens for clients.
+	 * @author Sam Thayer
 	 */
 	public class NetworkListener {
 		/** The server socket that this is a state for */

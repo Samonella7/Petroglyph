@@ -5,8 +5,8 @@ import java.awt.Color;
 /**
  * A class to represent the Mammoth.
  * 
- * A Mammoth is controlled by the computer, and tries to catch the Cavemen. It
- * can move in any direction.
+ * A Mammoth is controlled by the computer, and tries to catch the Cavemen by
+ * following a somewhat complex algorithm. It can move in any direction.
  * 
  * @author Sam Thayer
  */
@@ -33,7 +33,7 @@ public class Mammoth extends Participant {
 	 * If the mammoth is moving at this percent of its max speed, it turns to face
 	 * that direction
 	 */
-	public static final double MAMMOTH_TURN_PERCENT = .05;
+	public static final double MAMMOTH_TURN_PERCENT = .2;
 
 	/**
 	 * The number of frames for which the Mammoth will stay angry at a caveman that
@@ -48,12 +48,6 @@ public class Mammoth extends Participant {
 
 	/** The amount of damage that the mammoth takes per spear per frame */
 	public static final double SPEAR_DPF = .008;
-
-	/**
-	 * A value that influences the mammoth's movement. Making this value larger
-	 * makes the mammoth more likely to move at its maxSpeed.
-	 */
-	private static final double MAMMOTH_SCORE_MODIFIER = 1.8;
 
 	/** The maximum speed that this mammoth can move at */
 	private double maxSpeed;
@@ -214,13 +208,13 @@ public class Mammoth extends Participant {
 		double improvement = targetScore - currentScore;
 
 		// speed of movement depends on how much better the new location would be
-		Vector vector = targetLoc.minus(currentLoc);
-		double speed = maxSpeed * improvement * MAMMOTH_SCORE_MODIFIER;
+		double speed = maxSpeed * Math.sqrt(improvement);
 		if (speed > maxSpeed) {
 			speed = maxSpeed;
 		}
+		
+		Vector vector = targetLoc.minus(currentLoc);
 		vector.scaleInto(speed);
-
 		x += vector.x;
 		y += vector.y;
 

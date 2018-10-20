@@ -12,7 +12,9 @@ import view.PetroglyphWindow;
  * The mother of the entire Petroglyph application. This class facilitates
  * communication between the gui, the game engine, and the networking code while
  * the user starts and ends games. While the game is in progress, however, those
- * branches of the application can communicate directly with each other.
+ * branches of the application can communicate directly with each other. <br>
+ * This class also interprets the users' key presses and directs the commands as
+ * necessary.
  * 
  * @author Sam Thayer
  */
@@ -78,7 +80,8 @@ public class MainController implements KeyEventDispatcher {
 	public void startLocalGame(GameView view, int startingLevel) {
 		gameIsActive = true;
 		localPlayerCount = 3;
-		gameEngine = new GameEngine(view, startingLevel);
+		GameUpdateHandler[] updateArray = new GameUpdateHandler[] { view };
+		gameEngine = new GameEngine(updateArray, startingLevel);
 		gameEngine.startRound();
 	}
 
@@ -112,6 +115,30 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
+	 * Indicates that all connections are complete and that the user is ready to
+	 * launch the game.
+	 * 
+	 * @param view
+	 *            A reference to the GameView that will be displaying the game
+	 * @param startingLevel
+	 *            The level that the game should start at
+	 */
+	public void startGameAsServer(GameView view, int startingLevel) {
+		gameIsActive = true;
+		GameUpdateHandler[] updateArray = new GameUpdateHandler[] { view, server };
+		gameEngine = new GameEngine(updateArray, startingLevel);
+		gameEngine.startRound();
+	}
+
+	/**
+	 * Indicates that all connections are complete and that the server has launched
+	 * the game.
+	 */
+	public void startGameAsClient() {
+		gameIsActive = true;
+	}
+
+	/**
 	 * Cancels any connections that are in progress, whether this instance of the
 	 * game is acting as a Server, Client, or neither (in which case this method
 	 * does nothing).
@@ -130,23 +157,20 @@ public class MainController implements KeyEventDispatcher {
 	 * Closes all in-progress games and/or connections.
 	 */
 	public void lostConnection() {
-		if (gameIsActive) {
+		if (gameEngine != null) {
 			gameEngine.close();
 			gameEngine = null;
 		}
 		if (client != null) {
-			// One connection was lost. Since this is a client, the only connection that
-			// could have been lost is the one to the server, so there's no need to close
-			// that connection.
+			// No need to call close(), if the client detected that the connection was lost,
+			// it already closed everything necessary
 			client = null;
 		} else if (server != null) {
-			// If this is a server, however, there could be another client connected, or
-			// maybe even a Listener that is trying to accept more connections. However, for
-			// this simple game, it's best to just quit everything if anything goes wrong on
-			// the network:
-			server.close();
+			// Same with server
 			server = null;
 		}
+		gameIsActive = false;
+
 		// Also, have the gui take any necessary actions:
 		window.lostConnection();
 	}
@@ -201,15 +225,15 @@ public class MainController implements KeyEventDispatcher {
 		if (inputCode == -1)
 			return;
 
-		// Now that information is gathered, so pass it on to the GameEngine:
+		// Now that information is gathered, so pass it on to the right place:
 
 		if (inputCode == 4) {
-			gameEngine.tryThrowSpear(playerNum);
+			tryThrowSpear(playerNum);
 			return;
 		}
 
 		Direction direction = directionFromInputCode(inputCode);
-		gameEngine.beginMovement(playerNum, direction);
+		beginMovement(playerNum, direction);
 	}
 
 	/**
@@ -234,7 +258,7 @@ public class MainController implements KeyEventDispatcher {
 		}
 
 		Direction direction = directionFromInputCode(inputCode);
-		gameEngine.endMovement(playerNum, direction);
+		endMovement(playerNum, direction);
 	}
 
 	/**
@@ -272,6 +296,38 @@ public class MainController implements KeyEventDispatcher {
 			return Direction.down;
 		default:
 			return Direction.right;
+		}
+	}
+
+	/**
+	 * Has the identified caveman throw its spear if he is holding it.
+	 */
+	public void tryThrowSpear(int cavemanNumber) {
+		if (gameEngine != null)
+			gameEngine.tryThrowSpear(cavemanNumber);
+		else if (client != null)
+			client.tryThrowSpear();
+	}
+
+	/**
+	 * Has the identified caveman begin trying to move in the given direction.
+	 */
+	public void beginMovement(int cavemanNumber, Direction direction) {
+		if (gameEngine != null)
+			gameEngine.beginMovement(cavemanNumber, direction);
+		else if (client != null) {
+			client.beginMovement(direction);
+		}
+	}
+
+	/**
+	 * Has the identified caveman stop trying to move in the given direction.
+	 */
+	public void endMovement(int cavemanNumber, Direction direction) {
+		if (gameEngine != null)
+			gameEngine.endMovement(cavemanNumber, direction);
+		else if (client != null) {
+			client.endMovement(direction);
 		}
 	}
 }

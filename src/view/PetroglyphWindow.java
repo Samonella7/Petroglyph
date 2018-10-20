@@ -49,8 +49,14 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	/** A JPanel for displaying the lobby */
 	private JPanel lobbyPanel;
 
+	/**
+	 * The IP address of the machine this game is running on. If null, there was an
+	 * error while trying to obtain it.
+	 */
 	private String localIP;
 
+	// A host of gui elements. Sorry, I'm not going throw and commenting all of
+	// them. The names are self-explanatory anyway.
 	private JRadioButton localGameButton;
 	private JRadioButton hostGameButton;
 	private JRadioButton connectButton;
@@ -290,8 +296,50 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 		else
 			launchButton.setText("Connect");
 
-		ActionListener oldListener = cancelButton.getActionListeners()[0];
-		cancelButton.removeActionListener(oldListener);
+		ActionListener[] oldListeners = cancelButton.getActionListeners();
+		for (ActionListener a : oldListeners)
+			cancelButton.removeActionListener(a);
+
+		// This part only does something if readyToLaunchAsServer had been called,
+		// but doesn't hurt otherwise
+		oldListeners = launchButton.getActionListeners();
+		for (ActionListener a : oldListeners)
+			launchButton.removeActionListener(a);
+		launchButton.addActionListener(this);
+	}
+
+	/**
+	 * Allows the user to launch the game. Should only be called when the game was
+	 * waiting for clients.
+	 */
+	public void readyToLaunchAsServer() {
+		launchButton.setEnabled(true);
+		statusLabel.setText("Ready to play");
+
+		ActionListener oldListener = launchButton.getActionListeners()[0];
+		launchButton.removeActionListener(oldListener);
+
+		launchButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				launchButton.removeActionListener(this);
+				launchButton.addActionListener(oldListener);
+				stopWaitingForConnection();
+				enterGameView();
+				controller.startGameAsServer(gameView, Integer.parseInt(startingLevelBox.getText()));
+			}
+		});
+	}
+
+	/**
+	 * Sets up the view for playing as a client
+	 */
+	public GameView readyToLaunchAsClient() {
+		launchButton.setEnabled(true);
+		statusLabel.setText("Ready to play");
+		stopWaitingForConnection();
+		enterGameView();
+		return gameView;
 	}
 
 	/**
@@ -308,7 +356,6 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 
 		else {
 			enterLobbyView();
-			// TODO?
 		}
 	}
 
@@ -366,7 +413,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	 */
 	private void launchButtonPressed() {
 		// behavior depends on which tab the user was in
-		
+
 		if (localGameButton.isSelected()) {
 			enterGameView();
 			controller.startLocalGame(gameView, Integer.parseInt(startingLevelBox.getText()));

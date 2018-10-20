@@ -13,7 +13,7 @@ import java.awt.Color;
  */
 public abstract class Participant {
 	/**
-	 * A direction that a Participant can face
+	 * A direction that a Participant can face.
 	 */
 	public enum Direction {
 		up, down, left, right

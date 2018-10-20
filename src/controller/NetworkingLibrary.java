@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.channels.WritePendingException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -253,47 +252,64 @@ public class NetworkingLibrary {
 	 */
 	public static void getData(NetworkConnection connection, NetworkUpdateHandler callback) {
 		connection.messageCallback = callback;
-		connection.socket.read(connection.tempBuffer, connection, new CompletionHandler<Integer, NetworkConnection>() {
-			@Override
-			public void completed(Integer result, NetworkConnection connectionState) {
-				// If, in between the user's call to getData and this callback being triggered,
-				// the user called closeConnection, ignore this message
-				if (!connectionState.isValid) {
-					return;
-				}
-
-				// If the connection is closing:
-				if (result == -1) {
-					connectionState.isValid = false;
-					connectionState.messageCallback.connectionUpdate(connectionState, false, null);
-					return;
-				}
-				// Otherwise, get the message out of tempBuffer and into a better spot:
-				connectionState.tempBuffer.flip();
-				connectionState.largeBuffer
-						.append(StandardCharsets.UTF_8.decode(connectionState.tempBuffer).toString());
-				connectionState.tempBuffer.clear();
-
-				// Now search through the large buffer to see if there is a complete message (or
-				// even more than one) and if so, notify the user
-				String data = connectionState.largeBuffer.toString();
-				while (data.contains(Character.toString(connectionState.messageTerminator))) {
-					int indexOfEndOfMessageChar = data.indexOf(connectionState.messageTerminator);
-					String oneCompleteMessage = data.substring(0, indexOfEndOfMessageChar);
-					data = data.substring(indexOfEndOfMessageChar + 1, data.length());
-					connectionState.messageCallback.connectionUpdate(connectionState, true, oneCompleteMessage);
-				}
-				connectionState.largeBuffer = new StringBuilder(data);
+		
+		connection.readLock.lock();
+		if (!connection.isReading) {
+			connection.isReading = true;
+			connection.socket.read(connection.tempBuffer, connection, instance.new readHelper());
+		}
+		connection.readLock.unlock();
+	}
+	
+	/** A helper class to accept callbacks from socket reads */
+	private class readHelper implements CompletionHandler<Integer, NetworkConnection> {
+		@Override
+		public void completed(Integer result, NetworkConnection connectionState) {
+			connectionState.readLock.lock();
+			connectionState.isReading = false;
+			connectionState.readLock.unlock();
+			
+			// If, in between the user's call to getData and this callback being triggered,
+			// the user called closeConnection, ignore this message
+			if (!connectionState.isValid) {
+				return;
 			}
 
-			@Override
-			public void failed(Throwable exc, NetworkConnection connectionState) {
-				if (!connectionState.isValid) {
-					return;
-				}
+			// If the connection is closing:
+			if (result == -1) {
+				connectionState.isValid = false;
 				connectionState.messageCallback.connectionUpdate(connectionState, false, null);
+				return;
 			}
-		});
+			// Otherwise, get the message out of tempBuffer and into a better spot:
+			connectionState.tempBuffer.flip();
+			connectionState.largeBuffer
+					.append(StandardCharsets.UTF_8.decode(connectionState.tempBuffer).toString());
+			connectionState.tempBuffer.clear();
+
+			// Now search through the large buffer to see if there is a complete message (or
+			// even more than one) and if so, notify the user
+			String data = connectionState.largeBuffer.toString();
+			while (data.contains(Character.toString(connectionState.messageTerminator))) {
+				int indexOfEndOfMessageChar = data.indexOf(connectionState.messageTerminator);
+				String oneCompleteMessage = data.substring(0, indexOfEndOfMessageChar);
+				data = data.substring(indexOfEndOfMessageChar + 1, data.length());
+				connectionState.messageCallback.connectionUpdate(connectionState, true, oneCompleteMessage);
+			}
+			connectionState.largeBuffer = new StringBuilder(data);
+		}
+
+		@Override
+		public void failed(Throwable exc, NetworkConnection connectionState) {
+			connectionState.readLock.lock();
+			connectionState.isReading = false;
+			connectionState.readLock.unlock();
+			
+			if (!connectionState.isValid) {
+				return;
+			}
+			connectionState.messageCallback.connectionUpdate(connectionState, false, null);
+		}
 	}
 
 	/**
@@ -382,6 +398,12 @@ public class NetworkingLibrary {
 		/** A lock to prevent race conditions on messagesToSend */
 		private Lock sendLock;
 
+		/** Tells whether the socket is currently reading or not */
+		private boolean isReading;
+		
+		/** A lock to prevent race conditions on isReading */
+		private Lock readLock;
+		
 		/**
 		 * The small buffer which the socket will save data to. From here, data should
 		 * be promptly moved to "data," a StringBuilder
@@ -416,6 +438,8 @@ public class NetworkingLibrary {
 			this.messageTerminator = messageTerminator;
 			this.messagesToSend = new LinkedList<String>();
 			this.sendLock = new ReentrantLock();
+			this.isReading = false;
+			this.readLock = new ReentrantLock();
 		}
 	}
 

@@ -63,7 +63,7 @@ public class Client implements NetworkConnectionHandler, NetworkUpdateHandler {
 		}
 
 		if (!gameIsActive) {
-			// If this is the first message recieved, then the game is just starting up
+			// If this is the first message received, then the game is just starting up
 			gameIsActive = true;
 			controller.startGameAsClient();
 			view = window.readyToLaunchAsClient();
@@ -72,14 +72,7 @@ public class Client implements NetworkConnectionHandler, NetworkUpdateHandler {
 		// Even if this is the first message, it still has valid data:
 		if (newMessage(message)) {
 			// If parsing was successful, get ready for the next message
-			try {
-				NetworkingLibrary.getData(connection, this);
-			} catch (ReadPendingException e) {
-				// There was just once in testing that I got a ton of ReadPendingExceptions.
-				// I wasn't able to reproduce it and have no idea what caused it.
-				// But if there was somehow already a read going, then there shouldn't be a problem with
-				// letting it go and not starting another.
-			}
+			NetworkingLibrary.getData(connection, this);
 		} else {
 			// Otherwise, abort the game
 			close();

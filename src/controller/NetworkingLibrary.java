@@ -1,10 +1,11 @@
 
 package controller;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.InetAddress;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousServerSocketChannel;
 import java.nio.channels.AsynchronousSocketChannel;
@@ -104,11 +105,23 @@ public class NetworkingLibrary {
 	 * Returns this machine's IP address, or null if an error occurs.
 	 */
 	public static String getIP() {
-		InetAddress adr;
 		try {
-			adr = InetAddress.getLocalHost();
-			return adr.getHostAddress();
-		} catch (UnknownHostException e) {
+			URL whatismyip = new URL("http://checkip.amazonaws.com");
+			BufferedReader in = null;
+			try {
+				in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+				String ip = in.readLine();
+				return ip;
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} catch (Exception e) {
 			return null;
 		}
 	}

@@ -12,8 +12,8 @@ public class GameEngine {
 
 	public static final int MILLIES_PER_FRAME = 1000 / 40;
 
-	public static final double INITIAL_MAMMOTH_SPEED = .008;
-	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .004;
+	public static final double INITIAL_MAMMOTH_SPEED = .004;
+	public static final double MAMMOTH_SPEEDUP_PER_LEVEL = .0015;
 
 	/** The model that runs the game */
 	public Model model;

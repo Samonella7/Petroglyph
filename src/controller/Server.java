@@ -54,13 +54,11 @@ import controller.NetworkingLibrary.NetworkListener;
  * followed by a START_NEW_ROUND message, without any other messages coming from
  * the server in between them. This message contains no extra data: the message
  * key is immediately followed by the message terminator.
- * <ul>
  * <li>START_NEW_ROUND<br>
  * This type of message is only sent at the very begining of the game and after
  * ROUND_WIN messages. The message's key is followed only by an integer value
  * representable by java's standard int type. This value indicates the level of
  * the upcoming round.</li>
- * </ul>
  * </li>
  * <li>ROUND_LOSS<br>
  * This message indicates that the players lost a round, thereby loosing the
@@ -79,7 +77,6 @@ import controller.NetworkingLibrary.NetworkListener;
  * caveman. The message key is followed only by a String representation of a
  * {@link Participant.Direction}, which is the direction the player wants to
  * move in.</li>
- * <ul>
  * <li>END_MOVEMENT_KEY<br>
  * This message indicates that the sending client's player wants their caveman
  * to stop moving in a certain direction. The message key is followed only by a

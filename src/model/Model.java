@@ -51,10 +51,10 @@ public class Model {
 	/**
 	 * Creates a Model
 	 * 
-	 * @param mammothSpeedScaler
+	 * @param mammothSpeed
 	 *            The maximum speed that the mammoth should be able to move at
 	 */
-	public Model(double mammothSpeedScaler) {
+	public Model(double mammothSpeed) {
 		cavemen = new Caveman[3];
 		spears = new Spear[3];
 
@@ -67,7 +67,7 @@ public class Model {
 		cavemen[2] = new Caveman(.5 - Caveman.CAVEMAN_WIDTH / 2, .8, Color.yellow);
 		spears[2] = cavemen[2].getSpear();
 
-		mammoth = new Mammoth(mammothSpeedScaler, cavemen);
+		mammoth = new Mammoth(mammothSpeed, cavemen);
 	}
 
 	/**

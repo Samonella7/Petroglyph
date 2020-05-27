@@ -55,6 +55,11 @@ public abstract class Participant {
 		Hitbox hb = getHitbox();
 		return (hb.topY + hb.bottomY) / 2;
 	}
+	
+	/** Returns a vector indicating the center of this participant's hitbox */
+	public Vector getCenterLocation() {
+		return new Vector(getCenterX(), getCenterY());
+	}
 
 	/** Returns the Direction that this participant is facing */
 	public Direction getDirection() {
@@ -127,4 +132,76 @@ public abstract class Participant {
 		return overlappingX && overlappingY;
 	}
 
+	/**
+	 * A class to help with the vector math that the Mammoth does when deciding how
+	 * to move
+	 */
+	class Vector {
+		/**
+		 * Creates a Vector with the given dimensions
+		 */
+		public Vector(double x, double y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		/**
+		 * Creates a vector identical to the given one
+		 */
+		public Vector(Vector other) {
+			this.x = other.x;
+			this.y = other.y;
+		}
+
+		/**
+		 * This Vector's x dimension
+		 */
+		public double x;
+
+		/**
+		 * This Vector's y dimension
+		 */
+		public double y;
+
+		/**
+		 * Returns the norm (length) of this vector
+		 */
+		public double norm() {
+			return Math.sqrt(x * x + y * y);
+		}
+
+		/**
+		 * Scales to match the given norm, and returns this Vector
+		 */
+		public Vector scaleInto(double newNorm) {
+			double oldNorm = norm();
+			x = x / oldNorm * newNorm;
+			y = y / oldNorm * newNorm;
+			return this;
+		}
+
+		/**
+		 * Scales this vector by multiplying its values by the given scalar, and returns this vector
+		 */
+		public Vector scaleBy(double scalar) {
+			x = x * scalar;
+			y = y * scalar;
+			return this;
+		}
+
+		/**
+		 * Returns a new vector that is the sum of this one and the given one
+		 */
+		public Vector plus(Vector other) {
+			return new Vector(x + other.x, y + other.y);
+		}
+
+		/**
+		 * Returns a new vector that is the difference between this one and the given
+		 * one
+		 */
+		public Vector minus(Vector other) {
+			return new Vector(x - other.x, y - other.y);
+		}
+	}
 }

@@ -11,11 +11,9 @@ import java.util.ArrayList;
 import controller.NetworkingLibrary.NetworkConnection;
 
 /**
- * A class to run a client side version of Petroglyph. This class handles logic
- * for connecting, sending user inputs to the server, and updating the view to
- * stay up-to-date with the server. <br>
- * See the {@link Server} class's documentation for details on the network
- * protocol.
+ * A class to run a client side version of Petroglyph. This class handles logic for connecting, sending user inputs to
+ * the server, and updating the view to stay up-to-date with the server. <br>
+ * See the {@link Server} class's documentation for details on the network protocol.
  * 
  * @author Sam Thayer
  */
@@ -36,8 +34,7 @@ public class Client implements NetworkConnectionHandler, NetworkUpdateHandler {
 	private boolean gameIsActive;
 
 	/**
-	 * Makes a Client that will immediately try to connect with a server at
-	 * remoteIP.
+	 * Makes a Client that will immediately try to connect with a server at remoteIP.
 	 */
 	public Client(PetroglyphWindow window, MainController controller, String remoteIP) {
 		this.window = window;
@@ -76,8 +73,8 @@ public class Client implements NetworkConnectionHandler, NetworkUpdateHandler {
 	}
 
 	/**
-	 * Tries to parse the given message. If it is a valid message, takes appropriate
-	 * action and returns true. Otherwise, returns false.
+	 * Tries to parse the given message. If it is a valid message, takes appropriate action and returns true. Otherwise,
+	 * returns false.
 	 */
 	private boolean newMessage(String message) {
 		try {

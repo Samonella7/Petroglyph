@@ -5,8 +5,8 @@ import java.awt.Color;
 /**
  * A class to represent the Mammoth.
  * 
- * A Mammoth is controlled by the computer, and tries to catch the Cavemen by
- * following a somewhat complex algorithm. It can move in any direction.
+ * A Mammoth is controlled by the computer, and tries to catch the Cavemen by following a somewhat complex algorithm. It
+ * can move in any direction.
  * 
  * @author Sam Thayer
  */
@@ -24,27 +24,24 @@ public class Mammoth extends Participant {
 	/**
 	 * The length of the mammoths head.
 	 * 
-	 * This is a section of the mammoth's length, so the body_length == length -
-	 * head_length
+	 * This is a section of the mammoth's length, so the body_length == length - head_length
 	 */
 	public static final double MAMMOTH_HEAD_LENGTH = MAMMOTH_LENGTH - MAMMOTH_WIDTH;
 
-	/**
-	 * If the mammoth is moving at this percent of its max speed, it turns to face
-	 * that direction
-	 */
-	public static final double MAMMOTH_TURN_PERCENT = .2;
+	/** The percent of max speed at which the mammoth turns to face its direction */
+	public static final double MAMMOTH_TURN_SCALAR = .3;
 
-	/**
-	 * The number of frames for which the Mammoth will stay angry at a caveman that
-	 * hit it
-	 */
+	/** The number of frames for which the Mammoth will stay aggroed */
 	public static final int AGGRO_FRAMES = 300;
 
-	/**
-	 * A Scalar that determines how much the Mammoth will target aggro-ed cavemen
-	 */
-	public static final double AGGRO_SCALAR = 2.2;
+	/** How much more the Mammoth cares about aggroed cavemen */
+	public static final double AGGRO_SCALAR = 1.6;
+
+	/** Determines how quickly the mammoth starts prioritizing cavemen as they move closer */
+	public static final double PROXIMITY_TARGETING_DISTRIBUTION = 1.7;
+
+	/** Percentage defining how much the mammoth's movement is influenced by proximity targeting */
+	public static final double PROXIMITY_TARGETING_WEIGHT = .8;
 
 	/** The amount of damage that the mammoth takes per spear per frame */
 	public static final double SPEAR_DPF = .008;
@@ -58,8 +55,7 @@ public class Mammoth extends Participant {
 	/**
 	 * An array to identify cavemen that this Mammoth is angry at.
 	 * 
-	 * aggros[0] is the number of remaining frames for which the Mammoth will target
-	 * caveman 0.
+	 * aggros[0] is the number of remaining frames for which the Mammoth will target caveman 0.
 	 */
 	private int[] aggros;
 
@@ -86,8 +82,8 @@ public class Mammoth extends Participant {
 	}
 
 	/**
-	 * Makes this mammoth take damage for 1 frame of 1 collided spear, and allows
-	 * the movement algorithm to prioritize the caveman that hit it.
+	 * Makes this mammoth take damage for 1 frame of 1 collided spear, and allows the movement algorithm to prioritize the
+	 * caveman that hit it.
 	 */
 	public void takeDamage(int caveman) {
 		hp -= SPEAR_DPF;
@@ -144,32 +140,26 @@ public class Mammoth extends Participant {
 	}
 
 	/**
-	 * Turns the mammoth to face the given location. Note that this can change x,y:
-	 * the center of the mammoths body will stay anchored, but the head will swing
-	 * around it, so the top-left corner of the overall mammoth could change
+	 * Turns the mammoth to face the given direction. Note that this can change x,y: the center of the mammoths body will
+	 * stay anchored, but the head will swing around it, so the top-left corner of the overall mammoth could change
 	 */
-	private void turn(Vector targetLoc) {
-		// first, figure out what Direction the location is in
-		Vector mammothLoc = new Vector(getCenterX(), getCenterY());
-		Vector vector = targetLoc.minus(mammothLoc);
-
+	private void setDirection(Vector direction) {
 		Direction newDir;
-		if (Math.abs(vector.x) > Math.abs(vector.y)) {
-			newDir = vector.x > 0 ? Direction.right : Direction.left;
+		if (Math.abs(direction.x) > Math.abs(direction.y)) {
+			newDir = direction.x > 0 ? Direction.right : Direction.left;
 		} else {
-			newDir = vector.y > 0 ? Direction.down : Direction.up;
+			newDir = direction.y > 0 ? Direction.down : Direction.up;
 		}
 
 		setDirection(newDir);
 	}
 
 	/**
-	 * Turns the mammoth to face the given direction. Note that this can change x,y:
-	 * the center of the mammoths body will stay anchored, but the head will swing
-	 * around it, so the top-left corner of the overall mammoth could change
+	 * Turns the mammoth to face the given direction. Note that this can change x,y: the center of the mammoths body will
+	 * stay anchored, but the head will swing around it, so the top-left corner of the overall mammoth could change
 	 */
 	@Override
-	public void setDirection(Direction newDir) {
+	public void setDirection(Direction newDirection) {
 		// first, down/right as needed so that the new x,y is where
 		// the corner of the body used to be
 		if (direction == Direction.left) {
@@ -178,13 +168,13 @@ public class Mammoth extends Participant {
 			y += MAMMOTH_HEAD_LENGTH;
 		}
 
-		direction = newDir;
+		direction = newDirection;
 
 		// next shift up/left as needed so the corner of the body
 		// is where it was before this method was called
-		if (newDir == Direction.left) {
+		if (newDirection == Direction.left) {
 			x -= MAMMOTH_HEAD_LENGTH;
-		} else if (newDir == Direction.up) {
+		} else if (newDirection == Direction.up) {
 			y -= MAMMOTH_HEAD_LENGTH;
 		}
 	}
@@ -194,33 +184,20 @@ public class Mammoth extends Participant {
 	 * Moves the mammoth
 	 */
 	public void move() {
-		Vector currentLoc = new Vector(getCenterX(), getCenterY());
-		Vector targetLoc = chooseTarget();
+		Vector vec0 = calculateInfluence(0);
+		Vector vec1 = calculateInfluence(1);
+		Vector vec2 = calculateInfluence(2);
 
-		// See how much better the target location is than the current one
-		double currentScore = scoreOf(currentLoc);
-		double targetScore = scoreOf(targetLoc);
+		Vector move = vec0.plus(vec1).plus(vec2);
+		move.scaleBy(maxSpeed);
 
-		// I don't think this will ever happen:
-		if (targetScore < currentScore)
-			return;
-
-		double improvement = targetScore - currentScore;
-
-		// speed of movement depends on how much better the new location would be
-		double speed = maxSpeed * Math.sqrt(improvement);
-		if (speed > maxSpeed) {
-			speed = maxSpeed;
-		}
-		
-		Vector vector = targetLoc.minus(currentLoc);
-		vector.scaleInto(speed);
-		x += vector.x;
-		y += vector.y;
+		// Actually move:
+		x += move.x;
+		y += move.y;
 
 		// Also, turn to face that direction if the mammoth is moving very quickly
-		if (speed > maxSpeed * MAMMOTH_TURN_PERCENT) {
-			turn(targetLoc);
+		if (move.norm() > maxSpeed * MAMMOTH_TURN_SCALAR) {
+			setDirection(move);
 		}
 
 		// Now that movement is over, reduce the frame counts in aggros
@@ -231,161 +208,35 @@ public class Mammoth extends Participant {
 	}
 
 	/**
-	 * Returns a vector that is the location that the mammoth should move towards
+	 * Returns a vector pointed toward the specified caveman. It is scaled (norm 0-1) according to how much the mammoth
+	 * wants to attack it.
 	 */
-	private Vector chooseTarget() {
-		// Locations of the mammoth and each caveman
-		Vector mamLoc = new Vector(getCenterX(), getCenterY());
-		Vector c0Loc = new Vector(cavemen[0].getCenterX(), cavemen[0].getCenterY());
-		Vector c1Loc = new Vector(cavemen[1].getCenterX(), cavemen[1].getCenterY());
-		Vector c2Loc = new Vector(cavemen[2].getCenterX(), cavemen[2].getCenterY());
+	private Vector calculateInfluence(int cavemanNumber) {
+		Caveman caveman = cavemen[cavemanNumber];
 
-		// weighted average of the cavemen's locations, where each point's weight is
-		// inversely correlated to the distance from the mammoth
-		double w0 = Math.pow(1.8 - c0Loc.minus(mamLoc).norm(), 6);
-		double w1 = Math.pow(1.8 - c1Loc.minus(mamLoc).norm(), 6);
-		double w2 = Math.pow(1.8 - c2Loc.minus(mamLoc).norm(), 6);
+		if (!caveman.isConscious()) {
+			return new Vector(0, 0);
+		}
+		
+		Vector direction = cavemen[cavemanNumber].getCenterLocation().minus(getCenterLocation());
+		double distance = direction.norm();
 
-		// Weights are also effected by the aggro
-		if (aggros[0] > 0) {
-			w0 *= AGGRO_SCALAR;
-		}
-		if (aggros[1] > 0) {
-			w1 *= AGGRO_SCALAR;
-		}
-		if (aggros[2] > 0) {
-			w2 *= AGGRO_SCALAR;
-		}
+		// reminder: all coordinates are percents of map width/height
+		// max distance is diagonal corners, scale so this is 1
+		distance /= Math.sqrt(2);
 
-		// But unconcious cavemen have no weight
-		if (!cavemen[0].isConscious()) {
-			w0 = 0;
-		}
-		if (!cavemen[1].isConscious()) {
-			w1 = 0;
-		}
-		if (!cavemen[2].isConscious()) {
-			w2 = 0;
+		double proximityWeight = (1 - distance);
+		proximityWeight = Math.pow(proximityWeight, PROXIMITY_TARGETING_DISTRIBUTION) * PROXIMITY_TARGETING_WEIGHT;
+		double constantWeight = 1 - PROXIMITY_TARGETING_WEIGHT;
+
+		double totalWeight = proximityWeight + constantWeight;
+
+		// finally, non-aggroed cavemen are less important
+		if (aggros[cavemanNumber] == 0) {
+			totalWeight /= AGGRO_SCALAR;
 		}
 
-		c0Loc.scaleBy(w0);
-		c1Loc.scaleBy(w1);
-		c2Loc.scaleBy(w2);
-
-		// A quick check to avoid silly exceptions:
-		if (0 == w0 + w1 + w2)
-			return new Vector(.5, .5);
-
-		Vector target = c0Loc.plus(c1Loc).plus(c2Loc);
-		target.scaleBy(1 / (w0 + w1 + w2));
-		return target;
-	}
-
-	/**
-	 * Assigns a score between 0 and 1 to the given location.
-	 * 
-	 * This score is higher if the location is closer to more cavemen, and lower if
-	 * it is far from them.
-	 * 
-	 * Note that the maximum possible score is lower if some cavemen are
-	 * unconscious.
-	 */
-	private double scoreOf(Vector location) {
-		double totalScore = 0;
-		double totalPossible = 0;
-		for (int i = 0; i < cavemen.length; i++) {
-			if (!cavemen[i].isConscious()) {
-				totalPossible += 1;
-				continue;
-			}
-
-			Vector cLoc = new Vector(cavemen[i].getCenterX(), cavemen[i].getCenterY());
-			Vector difference = cLoc.minus(location);
-			double partialScore = 1.0 - difference.norm();
-
-			if (aggros[i] > 0) {
-				totalScore += partialScore * AGGRO_SCALAR;
-				totalPossible += AGGRO_SCALAR;
-			} else {
-				totalScore += partialScore;
-				totalPossible += 1;
-			}
-		}
-
-		double completeScore = totalScore / totalPossible;
-
-		return Math.pow(completeScore, 2);
-	}
-
-	/**
-	 * A class to help with the vector math that the Mammoth does when deciding how
-	 * to move
-	 */
-	class Vector {
-		/**
-		 * Creates a Vector with the given dimensions
-		 */
-		public Vector(double x, double y) {
-			this.x = x;
-			this.y = y;
-		}
-
-		/**
-		 * Creates a vector identical to the given one
-		 */
-		public Vector(Vector other) {
-			this.x = other.x;
-			this.y = other.y;
-		}
-
-		/**
-		 * This Vector's x dimension
-		 */
-		public double x;
-
-		/**
-		 * This Vector's y dimension
-		 */
-		public double y;
-
-		/**
-		 * Returns the norm (length) of this vector
-		 */
-		public double norm() {
-			return Math.sqrt(x * x + y * y);
-		}
-
-		/**
-		 * Scales this vector so that its norm is newNorm
-		 */
-		public void scaleInto(double newNorm) {
-			double oldNorm = norm();
-			x = x / oldNorm * newNorm;
-			y = y / oldNorm * newNorm;
-		}
-
-		/**
-		 * Scales this vector by multiplying its values by the given scalar
-		 */
-		public void scaleBy(double scalar) {
-			x = x * scalar;
-			y = y * scalar;
-		}
-
-		/**
-		 * Returns a new vector that is the sum of this one and the given one
-		 */
-		public Vector plus(Vector other) {
-			return new Vector(x + other.x, y + other.y);
-		}
-
-		/**
-		 * Returns a new vector that is the difference between this one and the given
-		 * one
-		 */
-		public Vector minus(Vector other) {
-			return new Vector(x - other.x, y - other.y);
-		}
+		return direction.scaleInto(totalWeight);
 	}
 
 }

@@ -19,8 +19,7 @@ public class GameEngine {
 	public Model model;
 
 	/**
-	 * An array of objects that should be updated for every frame and at the end of
-	 * rounds.
+	 * An array of objects that should be updated for every frame and at the end of rounds.
 	 */
 	private GameUpdateHandler[] updateArray;
 
@@ -40,8 +39,7 @@ public class GameEngine {
 	int level;
 
 	/**
-	 * Creates a GameEngine that will start the game at the given level, and updates
-	 * the given gameView at every frame.
+	 * Creates a GameEngine that will start the game at the given level, and updates the given gameView at every frame.
 	 */
 	public GameEngine(GameUpdateHandler[] updateArray, int startingLevel) {
 		this.updateArray = updateArray;
@@ -55,8 +53,7 @@ public class GameEngine {
 	}
 
 	/**
-	 * Shuts down this GameEngine immediately. It is assumed that the caller will
-	 * update the gui as well.
+	 * Shuts down this GameEngine immediately. It is assumed that the caller will update the gui as well.
 	 */
 	public void close() {
 		if (timer != null)
@@ -64,8 +61,7 @@ public class GameEngine {
 	}
 
 	/**
-	 * Starts a new round of the game. This method should not be called while a game
-	 * is in progress.
+	 * Starts a new round of the game. This method should not be called while a game is in progress.
 	 */
 	public void startRound() {
 		level++;

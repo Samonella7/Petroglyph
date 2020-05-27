@@ -18,24 +18,19 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * This is a library of static methods for network connections. <br>
- * The idea is that any program in need of a Tcp Server and Client can use these
- * methods and never need to know what a TcpListener or Socket is; they should
- * never use a method or object in System.Net.Sockets <br>
- * Instead, they only need to know how to use these relatively simple methods.
- * There are just a few things to understand: <br>
- * 1) The objects SocketState and Listener state should be thought of as your
- * connections; when you get one from one of these methods, save a reference so
- * you can call more methods with it. <br>
- * 2) How to implement SocketCallback()s: There are a few things that every
- * method used as a SocketCallback should do: First, check whether
- * connectionIsValid (the boolean parameter). If it is not, understand that this
- * connection was closed and you should not try to send or receive any more
- * data. You don't need to call CloseConnection either, just stop trying to use
- * this connection. Second, use DataBuffer. All incoming messages will be stuck
- * onto the end of it; they only way they come off is if you remove them. You
- * should have a well defined message protocol, so it's up to you to parse
- * messages and remove them from DataBuffer. The ExampleChatServer and
- * ExampleChatClient both show how to do these things.
+ * The idea is that any program in need of a Tcp Server and Client can use these methods and never need to know what a
+ * TcpListener or Socket is; they should never use a method or object in System.Net.Sockets <br>
+ * Instead, they only need to know how to use these relatively simple methods. There are just a few things to
+ * understand: <br>
+ * 1) The objects SocketState and Listener state should be thought of as your connections; when you get one from one of
+ * these methods, save a reference so you can call more methods with it. <br>
+ * 2) How to implement SocketCallback()s: There are a few things that every method used as a SocketCallback should do:
+ * First, check whether connectionIsValid (the boolean parameter). If it is not, understand that this connection was
+ * closed and you should not try to send or receive any more data. You don't need to call CloseConnection either, just
+ * stop trying to use this connection. Second, use DataBuffer. All incoming messages will be stuck onto the end of it;
+ * they only way they come off is if you remove them. You should have a well defined message protocol, so it's up to you
+ * to parse messages and remove them from DataBuffer. The ExampleChatServer and ExampleChatClient both show how to do
+ * these things.
  * 
  * @Author Sam Thayer
  */
@@ -61,9 +56,8 @@ public class NetworkingLibrary {
 		 * @param success
 		 *            Whether or not this connection has ended.
 		 * @param message
-		 *            The message sent from the connection. message does not contain the
-		 *            "messageTerminator" that was used to create this connection. If
-		 *            connectionIsValdid is false, message is null.
+		 *            The message sent from the connection. message does not contain the "messageTerminator" that was used to
+		 *            create this connection. If connectionIsValdid is false, message is null.
 		 */
 		public void connectionUpdate(NetworkConnection connection, boolean success, String message);
 	}
@@ -80,16 +74,14 @@ public class NetworkingLibrary {
 		 * @param connection
 		 *            A {@link NetworkConnection} representing the new connection
 		 * @param success
-		 *            True if a client connected successfully. If this value is false,
-		 *            then connection is null.
+		 *            True if a client connected successfully. If this value is false, then connection is null.
 		 */
 		public void initialConnectionUpdate(NetworkConnection connection, boolean success);
 	}
 
 	/*
-	 * This instance exists only so we can make NetworkListener and
-	 * NetworkConnection be nested classes, so that they can have private variables
-	 * that are still accessible from the NetworkLibrary functions.
+	 * This instance exists only so we can make NetworkListener and NetworkConnection be nested classes, so that they can
+	 * have private variables that are still accessible from the NetworkLibrary functions.
 	 * 
 	 * In short, java is silly.
 	 */
@@ -127,25 +119,22 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * Starts a server that will wait for clients to connect. The method an object
-	 * representing the connecting, unless there is an IO problem in which case it
-	 * returns null.
+	 * Starts a server that will wait for clients to connect. The method an object representing the connecting, unless there
+	 * is an IO problem in which case it returns null.
 	 * 
-	 * When a client connects, the given handler will be given an object
-	 * representing the connection. To resume listening for clients, use
+	 * When a client connects, the given handler will be given an object representing the connection. To resume listening
+	 * for clients, use
 	 * 
 	 * If there is an error while listening, the given handler will be notified.
 	 * 
-	 * Whenever the program is finished using the {@link NetworkListener}, it should
-	 * call closeListener with it, regardless of whether the listener is active or
-	 * not.
+	 * Whenever the program is finished using the {@link NetworkListener}, it should call closeListener with it, regardless
+	 * of whether the listener is active or not.
 	 * 
 	 * @param handler
 	 *            A functor to notify when a client connects.
 	 * @param messageTerminator
-	 *            A character that can be used to designate the end of messages.
-	 *            This character should not be used in ANY message passed to
-	 *            NetworkLibrary.send
+	 *            A character that can be used to designate the end of messages. This character should not be used in ANY
+	 *            message passed to NetworkLibrary.send
 	 */
 	public static NetworkListener openServer(NetworkConnectionHandler handler, char messageTerminator) {
 		try {
@@ -164,38 +153,34 @@ public class NetworkingLibrary {
 	/**
 	 * Makes the given {@link NetworkListener} resume accepting clients.
 	 * 
-	 * When a client connects, the {@link NetworkListener}'s handler will be given
-	 * an object representing the connection. To resume listening for clients, use
+	 * When a client connects, the {@link NetworkListener}'s handler will be given an object representing the connection. To
+	 * resume listening for clients, use
 	 * 
-	 * If there is an error while listening, the {@link NetworkListener}'s handler
-	 * will be notified.
+	 * If there is an error while listening, the {@link NetworkListener}'s handler will be notified.
 	 */
 	public static void resumeAcceptingClients(NetworkListener listenerState) {
-		listenerState.listener.accept(listenerState,
-				new CompletionHandler<AsynchronousSocketChannel, NetworkListener>() {
-					@Override
-					public void completed(AsynchronousSocketChannel result, NetworkListener listenerState) {
-						if (!listenerState.isValid) {
-							return;
-						}
+		listenerState.listener.accept(listenerState, new CompletionHandler<AsynchronousSocketChannel, NetworkListener>() {
+			@Override
+			public void completed(AsynchronousSocketChannel result, NetworkListener listenerState) {
+				if (!listenerState.isValid) {
+					return;
+				}
 
-						NetworkConnection socketState = instance.new NetworkConnection(result,
-								listenerState.messageTerminator);
-						listenerState.callMe.initialConnectionUpdate(socketState, true);
-					}
+				NetworkConnection socketState = instance.new NetworkConnection(result, listenerState.messageTerminator);
+				listenerState.callMe.initialConnectionUpdate(socketState, true);
+			}
 
-					@Override
-					public void failed(Throwable exc, NetworkListener listenerState) {
-						if (listenerState.isValid) {
-							listenerState.callMe.initialConnectionUpdate(null, false);
-						}
-					}
-				});
+			@Override
+			public void failed(Throwable exc, NetworkListener listenerState) {
+				if (listenerState.isValid) {
+					listenerState.callMe.initialConnectionUpdate(null, false);
+				}
+			}
+		});
 	}
 
 	/**
-	 * Closes the given listener. After calling this, you should consider the given
-	 * NetworkListener to be useless.
+	 * Closes the given listener. After calling this, you should consider the given NetworkListener to be useless.
 	 */
 	public static void closeListener(NetworkListener listener) {
 		try {
@@ -208,17 +193,15 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * Creates a connection for communicating with a server given by a hostname or
-	 * ip address.
+	 * Creates a connection for communicating with a server given by a hostname or ip address.
 	 * 
 	 * @param handler
 	 *            A functor to be used when a connection is made
 	 * @param hostName
 	 *            The name of the server to connect to
 	 * @param messageTerminator
-	 *            A character that can be used to designate the end of messages.
-	 *            This character should not be used in ANY message passed to
-	 *            NetworkLibrary.send
+	 *            A character that can be used to designate the end of messages. This character should not be used in ANY
+	 *            message passed to NetworkLibrary.send
 	 */
 	public static void connectToServer(NetworkConnectionHandler handler, String hostName, char messageTerminator) {
 		try {
@@ -260,8 +243,7 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * Tells the given socket to listen for data from its connection. When data is
-	 * received, callback will be called.
+	 * Tells the given socket to listen for data from its connection. When data is received, callback will be called.
 	 */
 	public static void getData(NetworkConnection connection, NetworkUpdateHandler callback) {
 		connection.messageCallback = callback;
@@ -340,8 +322,7 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * A Helper method that will send messages one at a time until connection has no
-	 * messages left to send.
+	 * A Helper method that will send messages one at a time until connection has no messages left to send.
 	 */
 	private static void sendNextMessage(NetworkConnection connection) {
 		// don't remove from the queue until the send has finished
@@ -372,8 +353,8 @@ public class NetworkingLibrary {
 	}
 
 	/**
-	 * Closes a {@link NetworkConnection}. After calling this method, the given
-	 * {@link NetworkConnection} should be considered useless.
+	 * Closes a {@link NetworkConnection}. After calling this method, the given {@link NetworkConnection} should be
+	 * considered useless.
 	 */
 	public static void closeConnection(NetworkConnection connection) {
 		try {
@@ -417,20 +398,18 @@ public class NetworkingLibrary {
 		private Lock readLock;
 
 		/**
-		 * The small buffer which the socket will save data to. From here, data should
-		 * be promptly moved to "data," a StringBuilder
+		 * The small buffer which the socket will save data to. From here, data should be promptly moved to "data," a
+		 * StringBuilder
 		 */
 		private ByteBuffer tempBuffer;
 
 		/**
-		 * A large buffer to dump data from messageBuffer into. All incoming data will
-		 * end up here before the program sees it.
+		 * A large buffer to dump data from messageBuffer into. All incoming data will end up here before the program sees it.
 		 */
 		private StringBuilder largeBuffer;
 
 		/**
-		 * True unless the user has asked to close this connection, meaning any future
-		 * messages should be ignored.
+		 * True unless the user has asked to close this connection, meaning any future messages should be ignored.
 		 */
 		private boolean isValid;
 
@@ -465,14 +444,12 @@ public class NetworkingLibrary {
 		private AsynchronousServerSocketChannel listener;
 
 		/**
-		 * The object to be notified whenever a client attempts connecting to the
-		 * TCPListener
+		 * The object to be notified whenever a client attempts connecting to the TCPListener
 		 */
 		private NetworkConnectionHandler callMe;
 
 		/**
-		 * True unless the user has asked to close this listener, meaning any future
-		 * messages should be ignored.
+		 * True unless the user has asked to close this listener, meaning any future messages should be ignored.
 		 */
 		private boolean isValid;
 
@@ -484,8 +461,7 @@ public class NetworkingLibrary {
 		/**
 		 * Creates a state that contains information relevant to a TCPListener
 		 */
-		private NetworkListener(AsynchronousServerSocketChannel listener, NetworkConnectionHandler callback,
-				char messageTerminator) {
+		private NetworkListener(AsynchronousServerSocketChannel listener, NetworkConnectionHandler callback, char messageTerminator) {
 			this.listener = listener;
 			this.callMe = callback;
 			this.isValid = true;

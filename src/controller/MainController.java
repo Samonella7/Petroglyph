@@ -9,12 +9,10 @@ import view.GameView;
 import view.PetroglyphWindow;
 
 /**
- * The mother of the entire Petroglyph application. This class facilitates
- * communication between the gui, the game engine, and the networking code while
- * the user starts and ends games. While the game is in progress, however, those
+ * The mother of the entire Petroglyph application. This class facilitates communication between the gui, the game
+ * engine, and the networking code while the user starts and ends games. While the game is in progress, however, those
  * branches of the application can communicate directly with each other. <br>
- * This class also interprets the users' key presses and directs the commands as
- * necessary.
+ * This class also interprets the users' key presses and directs the commands as necessary.
  * 
  * @author Sam Thayer
  */
@@ -24,35 +22,29 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 0. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
+	 * An array of 5 Virtual Key Codes that will be used as the controls for player 0. In order, they represent: "Move up,"
+	 * "Move left," "Move down," "Move right," and "Throw spear."
 	 */
-	public static int[] P0Keys = { KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT,
-			KeyEvent.VK_SHIFT };
+	public static int[] P0Keys = { KeyEvent.VK_UP, KeyEvent.VK_LEFT, KeyEvent.VK_DOWN, KeyEvent.VK_RIGHT, KeyEvent.VK_SHIFT };
 	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 1. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
+	 * An array of 5 Virtual Key Codes that will be used as the controls for player 1. In order, they represent: "Move up,"
+	 * "Move left," "Move down," "Move right," and "Throw spear."
 	 */
 	public static int[] P1Keys = { KeyEvent.VK_W, KeyEvent.VK_A, KeyEvent.VK_S, KeyEvent.VK_D, KeyEvent.VK_E };
 	/**
-	 * An array of 5 Virtual Key Codes that will be used as the controls for player
-	 * 2. In order, they represent: "Move up," "Move left," "Move down," "Move
-	 * right," and "Throw spear."
+	 * An array of 5 Virtual Key Codes that will be used as the controls for player 2. In order, they represent: "Move up,"
+	 * "Move left," "Move down," "Move right," and "Throw spear."
 	 */
 	public static int[] P2Keys = { KeyEvent.VK_U, KeyEvent.VK_H, KeyEvent.VK_J, KeyEvent.VK_K, KeyEvent.VK_I };
 
 	/** A reference the GameEngine, if a game is active. null otherwise. */
 	private GameEngine gameEngine;
 	/**
-	 * A reference to the Server, if this instance of the game is acting as one.
-	 * null otherwise.
+	 * A reference to the Server, if this instance of the game is acting as one. null otherwise.
 	 */
 	private Server server;
 	/**
-	 * A reference to the Client, if this instance of the game is acting as one.
-	 * null otherwise.
+	 * A reference to the Client, if this instance of the game is acting as one. null otherwise.
 	 */
 	private Client client;
 
@@ -62,8 +54,7 @@ public class MainController implements KeyEventDispatcher {
 	/** Tells whether there is an active game or not */
 	private boolean gameIsActive;
 	/**
-	 * Tells how many of the cavemen are being controlled by this instance of
-	 * Petroglyph
+	 * Tells how many of the cavemen are being controlled by this instance of Petroglyph
 	 */
 	private int localPlayerCount;
 
@@ -89,8 +80,7 @@ public class MainController implements KeyEventDispatcher {
 	 * Attempts to start a server that will eventually host a game.
 	 * 
 	 * @param localPlayerCount
-	 *            The number of cavemen that will be controlled by this instance of
-	 *            the game. Should be 1 or 2.
+	 *            The number of cavemen that will be controlled by this instance of the game. Should be 1 or 2.
 	 * @return True if the server started up successfully, false otherwise.
 	 */
 	public boolean startServer(int localPlayerCount) {
@@ -115,8 +105,7 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
-	 * Indicates that all connections are complete and that the user is ready to
-	 * launch the game.
+	 * Indicates that all connections are complete and that the user is ready to launch the game.
 	 * 
 	 * @param view
 	 *            A reference to the GameView that will be displaying the game
@@ -131,17 +120,15 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
-	 * Indicates that all connections are complete and that the server has launched
-	 * the game.
+	 * Indicates that all connections are complete and that the server has launched the game.
 	 */
 	public void startGameAsClient() {
 		gameIsActive = true;
 	}
 
 	/**
-	 * Cancels any connections that are in progress, whether this instance of the
-	 * game is acting as a Server, Client, or neither (in which case this method
-	 * does nothing).
+	 * Cancels any connections that are in progress, whether this instance of the game is acting as a Server, Client, or
+	 * neither (in which case this method does nothing).
 	 */
 	public void cancelConnection() {
 		if (server != null) {
@@ -262,9 +249,8 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
-	 * If keycode is a valid input for a specific caveman (ie if keycode is
-	 * contained in keyBindings) then returns the "input code" for the key. This is
-	 * just keyCode's index in keyBindings, but its value has meaning:
+	 * If keycode is a valid input for a specific caveman (ie if keycode is contained in keyBindings) then returns the
+	 * "input code" for the key. This is just keyCode's index in keyBindings, but its value has meaning:
 	 * 
 	 * <ul>
 	 * <li>0-3: Directional inputs, that can be decoded by directionFromInputCode
@@ -283,8 +269,8 @@ public class MainController implements KeyEventDispatcher {
 	}
 
 	/**
-	 * Assumes that inputCode is a directional input (ie it is on the interval
-	 * [0,3]) and returns the Direction associated with it.
+	 * Assumes that inputCode is a directional input (ie it is on the interval [0,3]) and returns the Direction associated
+	 * with it.
 	 */
 	private Direction directionFromInputCode(int inputCode) {
 		switch (inputCode) {

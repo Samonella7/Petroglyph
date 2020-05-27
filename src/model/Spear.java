@@ -5,12 +5,11 @@ import java.awt.Color;
 /**
  * A class to represent a Spear.
  * 
- * A Spear can be thrown by its associated Caveman to damage the Mammoth. When
- * thrown, it moves in a straight line in the direction the caveman was facing
- * when he threw it.
+ * A Spear can be thrown by its associated Caveman to damage the Mammoth. When thrown, it moves in a straight line in
+ * the direction the caveman was facing when he threw it.
  * 
- * All dimensions are measured in percents, so x=.5 is halfway accross the
- * board. All speeds are measured in percent per frame.
+ * All dimensions are measured in percents, so x=.5 is halfway accross the board. All speeds are measured in percent per
+ * frame.
  * 
  * @author Sam Thayer
  */
@@ -30,8 +29,7 @@ public class Spear extends Participant {
 	protected SpearState state;
 
 	/**
-	 * The Number of frames that before this spear becomes inactive. This value is
-	 * irrelevant if this Spear is not active.
+	 * The Number of frames that before this spear becomes inactive. This value is irrelevant if this Spear is not active.
 	 */
 	protected int remainingAirtime;
 

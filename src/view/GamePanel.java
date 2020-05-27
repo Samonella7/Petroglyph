@@ -91,8 +91,7 @@ class GamePanel extends JPanel {
 	}
 
 	/**
-	 * Updates the display, taking into account any changes to the GameWindow's
-	 * participants
+	 * Updates the display, taking into account any changes to the GameWindow's participants
 	 */
 	public void update(SimpleParticipant[] participants) {
 		this.participants = participants;
@@ -114,8 +113,8 @@ class GamePanel extends JPanel {
 	}
 
 	/**
-	 * Redraws this panel, taking into account changes (if any) in the location of
-	 * the participants that this GamePanel draws
+	 * Redraws this panel, taking into account changes (if any) in the location of the participants that this GamePanel
+	 * draws
 	 */
 	@Override
 	public void paintComponent(Graphics g) {
@@ -245,61 +244,50 @@ class GamePanel extends JPanel {
 		case up:
 			bodyHb = new Hitbox(oHb.leftX, oHb.topY + MAMMOTH_HEAD_LENGTH, oHb.width, oHb.length - MAMMOTH_HEAD_LENGTH);
 
-			headHb = new Hitbox(oHb.leftX + (oHb.width - MAMMOTH_HEAD_WIDTH) / 2, oHb.topY, MAMMOTH_HEAD_WIDTH,
-					MAMMOTH_HEAD_LENGTH);
+			headHb = new Hitbox(oHb.leftX + (oHb.width - MAMMOTH_HEAD_WIDTH) / 2, oHb.topY, MAMMOTH_HEAD_WIDTH, MAMMOTH_HEAD_LENGTH);
 
-			shaftHb = new Hitbox(oHb.leftX, oHb.topY + MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET - MAMMOTH_HORN_WIDTH,
-					oHb.width, MAMMOTH_HORN_WIDTH);
+			shaftHb = new Hitbox(oHb.leftX, oHb.topY + MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET - MAMMOTH_HORN_WIDTH, oHb.width, MAMMOTH_HORN_WIDTH);
 
 			leftHb = new Hitbox(oHb.leftX, oHb.topY, MAMMOTH_HORN_WIDTH, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET);
 
-			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HORN_WIDTH, oHb.topY, MAMMOTH_HORN_WIDTH,
-					MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET);
+			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HORN_WIDTH, oHb.topY, MAMMOTH_HORN_WIDTH, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET);
 			break;
 		case down:
 			bodyHb = new Hitbox(oHb.leftX, oHb.topY, oHb.width, oHb.length - MAMMOTH_HEAD_LENGTH);
 
-			headHb = new Hitbox(oHb.leftX + (oHb.width - MAMMOTH_HEAD_WIDTH) / 2, oHb.bottomY - MAMMOTH_HEAD_LENGTH,
-					MAMMOTH_HEAD_WIDTH, MAMMOTH_HEAD_LENGTH);
+			headHb = new Hitbox(oHb.leftX + (oHb.width - MAMMOTH_HEAD_WIDTH) / 2, oHb.bottomY - MAMMOTH_HEAD_LENGTH, MAMMOTH_HEAD_WIDTH, MAMMOTH_HEAD_LENGTH);
 
-			shaftHb = new Hitbox(oHb.leftX, oHb.bottomY - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.width,
-					MAMMOTH_HORN_WIDTH);
+			shaftHb = new Hitbox(oHb.leftX, oHb.bottomY - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.width, MAMMOTH_HORN_WIDTH);
 
 			leftHb = new Hitbox(oHb.leftX, oHb.bottomY - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH,
 					MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET);
 
-			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HORN_WIDTH,
-					oHb.bottomY - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH,
+			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HORN_WIDTH, oHb.bottomY - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH,
 					MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET);
 			break;
 		case left:
 			bodyHb = new Hitbox(oHb.leftX + MAMMOTH_HEAD_LENGTH, oHb.topY, oHb.width - MAMMOTH_HEAD_LENGTH, oHb.length);
 
-			headHb = new Hitbox(oHb.leftX, oHb.topY + (oHb.length - MAMMOTH_HEAD_WIDTH) / 2, MAMMOTH_HEAD_LENGTH,
-					MAMMOTH_HEAD_WIDTH);
+			headHb = new Hitbox(oHb.leftX, oHb.topY + (oHb.length - MAMMOTH_HEAD_WIDTH) / 2, MAMMOTH_HEAD_LENGTH, MAMMOTH_HEAD_WIDTH);
 
-			shaftHb = new Hitbox(oHb.leftX + MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET - MAMMOTH_HORN_WIDTH, oHb.topY,
-					MAMMOTH_HORN_WIDTH, oHb.length);
+			shaftHb = new Hitbox(oHb.leftX + MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET - MAMMOTH_HORN_WIDTH, oHb.topY, MAMMOTH_HORN_WIDTH, oHb.length);
 
-			leftHb = new Hitbox(oHb.leftX, oHb.bottomY - MAMMOTH_HORN_WIDTH, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET,
-					MAMMOTH_HORN_WIDTH);
+			leftHb = new Hitbox(oHb.leftX, oHb.bottomY - MAMMOTH_HORN_WIDTH, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH);
 
 			rightHb = new Hitbox(oHb.leftX, oHb.topY, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH);
 			break;
 		default: // (this is facing right)
 			bodyHb = new Hitbox(oHb.leftX, oHb.topY, oHb.width - MAMMOTH_HEAD_LENGTH, oHb.length);
 
-			headHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH, oHb.topY + (oHb.length - MAMMOTH_HEAD_WIDTH) / 2,
-					MAMMOTH_HEAD_LENGTH, MAMMOTH_HEAD_WIDTH);
+			headHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH, oHb.topY + (oHb.length - MAMMOTH_HEAD_WIDTH) / 2, MAMMOTH_HEAD_LENGTH, MAMMOTH_HEAD_WIDTH);
 
-			shaftHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.topY, MAMMOTH_HORN_WIDTH,
-					oHb.length);
+			shaftHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.topY, MAMMOTH_HORN_WIDTH, oHb.length);
 
-			leftHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.topY,
+			leftHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.topY, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET,
+					MAMMOTH_HORN_WIDTH);
+
+			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET, oHb.bottomY - MAMMOTH_HORN_WIDTH,
 					MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH);
-
-			rightHb = new Hitbox(oHb.rightX - MAMMOTH_HEAD_LENGTH + MAMMOTH_HORN_OFFSET,
-					oHb.bottomY - MAMMOTH_HORN_WIDTH, MAMMOTH_HEAD_LENGTH - MAMMOTH_HORN_OFFSET, MAMMOTH_HORN_WIDTH);
 			break;
 		}
 
@@ -340,9 +328,8 @@ class GamePanel extends JPanel {
 		public int bottomY;
 
 		/**
-		 * Converts the given Hitbox to a PixelBox. The Hitbox's units are percents of
-		 * the gameboard, so the new PixelBox's is basically a scaled version, using the
-		 * given dimensions of the GamePanel.
+		 * Converts the given Hitbox to a PixelBox. The Hitbox's units are percents of the gameboard, so the new PixelBox's is
+		 * basically a scaled version, using the given dimensions of the GamePanel.
 		 */
 		public PixelBox(Hitbox hb, int maxX, int maxY) {
 			this.leftX = (int) (hb.leftX * maxX);

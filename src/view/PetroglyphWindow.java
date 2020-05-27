@@ -25,8 +25,8 @@ import controller.MainController;
 import controller.NetworkingLibrary;
 
 /**
- * The main window for the program. Starts as a lobby for connecting with
- * friends, and replaces everything with a GameView once the game starts.
+ * The main window for the program. Starts as a lobby for connecting with friends, and replaces everything with a
+ * GameView once the game starts.
  * 
  * @author Sam Thayer
  */
@@ -50,8 +50,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	private JPanel lobbyPanel;
 
 	/**
-	 * The IP address of the machine this game is running on. If null, there was an
-	 * error while trying to obtain it.
+	 * The IP address of the machine this game is running on. If null, there was an error while trying to obtain it.
 	 */
 	private String localIP;
 
@@ -220,8 +219,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Allows the user to switch between tabs of the lobby (to be used after a call
-	 * to lockLobbySection())
+	 * Allows the user to switch between tabs of the lobby (to be used after a call to lockLobbySection())
 	 */
 	private void unlockLobbySection() {
 		localGameButton.setEnabled(true);
@@ -232,8 +230,8 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Configures the lobby for a wait for a network connection. This mainly means
-	 * locking down features that were used to configure the connection.
+	 * Configures the lobby for a wait for a network connection. This mainly means locking down features that were used to
+	 * configure the connection.
 	 */
 	private void beginWaitingForConnection() {
 		statusPanel.setVisible(true);
@@ -253,35 +251,34 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Notifies the user that a client has connected to their server. This should
-	 * only be called while the program is waiting for clients to connect.
+	 * Notifies the user that a client has connected to their server. This should only be called while the program is
+	 * waiting for clients to connect.
 	 */
 	public void newConnectionAsServer(int playersStillNeeded) {
 		statusLabel.setText("Another player connected. Wating for " + playersStillNeeded + " more...");
 	}
 
 	/**
-	 * Notifies the user that they successfully connected to a server. This should
-	 * only be called when the program was connecting to a server.
+	 * Notifies the user that they successfully connected to a server. This should only be called when the program was
+	 * connecting to a server.
 	 */
 	public void connectedAsClient() {
 		statusLabel.setText("Connected. Waiting for host to launch game...");
 	}
 
 	/**
-	 * Notifies the user that they were unable to connect to a server, and opens
-	 * options for them to try again or do something else. This should only be
-	 * called when the program was connecting to a server.
+	 * Notifies the user that they were unable to connect to a server, and opens options for them to try again or do
+	 * something else. This should only be called when the program was connecting to a server.
 	 */
 	public void failedToConnectAsClient() {
 		stopWaitingForConnection();
-		JOptionPane.showMessageDialog(null, "Failed to connect. Are you sure that there is a server running at "
-				+ ipBox.getText() + "? Are you sure that this game has internet access?");
+		JOptionPane.showMessageDialog(null,
+				"Failed to connect. Are you sure that there is a server running at " + ipBox.getText() + "? Are you sure that this game has internet access?");
 	}
 
 	/**
-	 * Unfreezes features related to configuring network connections. Specifically,
-	 * undoes the effects of beginWaitingForConnection()
+	 * Unfreezes features related to configuring network connections. Specifically, undoes the effects of
+	 * beginWaitingForConnection()
 	 * 
 	 * @param launchButtonText
 	 */
@@ -309,8 +306,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Allows the user to launch the game. Should only be called when the game was
-	 * waiting for clients.
+	 * Allows the user to launch the game. Should only be called when the game was waiting for clients.
 	 */
 	public void readyToLaunchAsServer() {
 		launchButton.setEnabled(true);
@@ -343,13 +339,11 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 	}
 
 	/**
-	 * Notifies the user that a connection error occurred, and closes gui elements
-	 * for any active operation. This is a general purpose method that can be called
-	 * any time while the user is connected to another instance of Petroglyph.
+	 * Notifies the user that a connection error occurred, and closes gui elements for any active operation. This is a
+	 * general purpose method that can be called any time while the user is connected to another instance of Petroglyph.
 	 */
 	public void lostConnection() {
-		JOptionPane.showMessageDialog(null,
-				"A connection error occured. Either you lost intearnet access, or one of the other players disconnected.");
+		JOptionPane.showMessageDialog(null, "A connection error occured. Either you lost intearnet access, or one of the other players disconnected.");
 		if (lobbyPanel.isVisible()) {
 			stopWaitingForConnection();
 		}
@@ -425,8 +419,7 @@ public class PetroglyphWindow extends JFrame implements ActionListener {
 			if (controller.startServer(localPlayerCount)) {
 				beginWaitingForConnection();
 			} else {
-				JOptionPane.showMessageDialog(null,
-						"A connection error occured. Are you sure that this game has access to the internet?");
+				JOptionPane.showMessageDialog(null, "A connection error occured. Are you sure that this game has access to the internet?");
 			}
 		}
 

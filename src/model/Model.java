@@ -8,8 +8,8 @@ import model.Spear.SpearState;
 /**
  * A class to represent the state of a game of Petroglyph.
  * 
- * All dimensions are measured in percents, so x=.5 is halfway accross the
- * board. All speeds are measured in percent per frame.
+ * All dimensions are measured in percents, so x=.5 is halfway accross the board. All speeds are measured in percent per
+ * frame.
  * 
  * @author Sam Thayer
  */
@@ -27,9 +27,8 @@ public class Model {
 	}
 
 	/**
-	 * Returns a representation of all the game's participants.
-	 * getParticipantList()[0] is a SimpleParticipant representing the Mammoth. Next
-	 * are representations for the cavemen, and finally for the spears.
+	 * Returns a representation of all the game's participants. getParticipantList()[0] is a SimpleParticipant representing
+	 * the Mammoth. Next are representations for the cavemen, and finally for the spears.
 	 */
 	public SimpleParticipant[] getParticipantList() {
 		SimpleParticipant[] list = new SimpleParticipant[cavemen.length + spears.length + 1];
@@ -155,8 +154,7 @@ public class Model {
 	}
 
 	/**
-	 * Makes a Caveman try to throw his spear. Does nothing if the Caveman is not
-	 * holding his spear.
+	 * Makes a Caveman try to throw his spear. Does nothing if the Caveman is not holding his spear.
 	 * 
 	 * @param cavemanNumber
 	 *            An identifier for a Caveman: 0, 1, or 2

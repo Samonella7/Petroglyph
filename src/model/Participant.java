@@ -3,11 +3,10 @@ package model;
 import java.awt.Color;
 
 /**
- * A class to represent objects in the game. All game objects extend
- * Participant.
+ * A class to represent objects in the game. All game objects extend Participant.
  * 
- * All dimensions are measured in percents, so x=.5 is halfway accross the
- * board. All speeds are measured in percent per frame.
+ * All dimensions are measured in percents, so x=.5 is halfway accross the board. All speeds are measured in percent per
+ * frame.
  * 
  * @author Sam Thayer
  */
@@ -55,7 +54,7 @@ public abstract class Participant {
 		Hitbox hb = getHitbox();
 		return (hb.topY + hb.bottomY) / 2;
 	}
-	
+
 	/** Returns a vector indicating the center of this participant's hitbox */
 	public Vector getCenterLocation() {
 		return new Vector(getCenterX(), getCenterY());
@@ -83,8 +82,8 @@ public abstract class Participant {
 	public abstract void move();
 
 	/**
-	 * Moves this Participant in it's current direction by the given amount, but
-	 * will not move it off the edge of the game area.
+	 * Moves this Participant in it's current direction by the given amount, but will not move it off the edge of the game
+	 * area.
 	 */
 	protected void move(double speed) {
 		switch (direction) {
@@ -114,8 +113,7 @@ public abstract class Participant {
 	}
 
 	/**
-	 * Returns true if this Participant's hitbox is overlapping with that of the
-	 * given Participant, and false otherwise.
+	 * Returns true if this Participant's hitbox is overlapping with that of the given Participant, and false otherwise.
 	 */
 	public final boolean collidedWith(Participant other) {
 		Hitbox thisHb = this.getHitbox();
@@ -133,8 +131,7 @@ public abstract class Participant {
 	}
 
 	/**
-	 * A class to help with the vector math that the Mammoth does when deciding how
-	 * to move
+	 * A class to help with the vector math that the Mammoth does when deciding how to move
 	 */
 	class Vector {
 		/**
@@ -197,8 +194,7 @@ public abstract class Participant {
 		}
 
 		/**
-		 * Returns a new vector that is the difference between this one and the given
-		 * one
+		 * Returns a new vector that is the difference between this one and the given one
 		 */
 		public Vector minus(Vector other) {
 			return new Vector(x - other.x, y - other.y);

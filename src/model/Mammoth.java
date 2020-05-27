@@ -217,7 +217,7 @@ public class Mammoth extends Participant {
 		if (!caveman.isConscious()) {
 			return new Vector(0, 0);
 		}
-		
+
 		Vector direction = cavemen[cavemanNumber].getCenterLocation().minus(getCenterLocation());
 		double distance = direction.norm();
 

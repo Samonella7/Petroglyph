@@ -147,7 +147,7 @@ public class GameView extends JPanel implements ActionListener, GameUpdateHandle
 	@Override
 	public void roundWin(GameEngine engine) {
 		gamePanel.displayWin();
-		
+
 		if (engine != null) {
 			nextLevelButton.setVisible(true);
 			nextLevelButton.addActionListener(new ActionListener() {

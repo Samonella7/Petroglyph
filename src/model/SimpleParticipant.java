@@ -5,14 +5,12 @@ import java.awt.Color;
 import model.Participant.Direction;
 
 /**
- * A simplified representation for {@link Participant}s. This class can
- * represent any type of participant, and stores its state (location, color,
- * etc). It doesn't have extra information required for game logic (SpearState,
- * movement speed, etc).
+ * A simplified representation for {@link Participant}s. This class can represent any type of participant, and stores
+ * its state (location, color, etc). It doesn't have extra information required for game logic (SpearState, movement
+ * speed, etc).
  * 
- * This class is suitable for passing information to the view, and can be
- * translated to and from Strings so it is suitable for passing across the
- * network as well.
+ * This class is suitable for passing information to the view, and can be translated to and from Strings so it is
+ * suitable for passing across the network as well.
  * 
  * @author Sam Thayer
  */
@@ -35,13 +33,11 @@ public class SimpleParticipant {
 	private Color color;
 
 	/**
-	 * The amount of hp this participant has. This value is meaningless unless
-	 * type==ParticipantType.mammoth
+	 * The amount of hp this participant has. This value is meaningless unless type==ParticipantType.mammoth
 	 */
 	private double hp;
 	/**
-	 * Whether this participant is conscious or not. This value is meaningless
-	 * unless type==ParticipantType.caveman
+	 * Whether this participant is conscious or not. This value is meaningless unless type==ParticipantType.caveman
 	 */
 	private boolean conscious;
 
@@ -63,9 +59,8 @@ public class SimpleParticipant {
 	}
 
 	/**
-	 * Makes a SimpleParticipant out of the given String representation of one. This
-	 * constructor should only be used with Strings that were made by
-	 * SimpleParticipant.toString().
+	 * Makes a SimpleParticipant out of the given String representation of one. This constructor should only be used with
+	 * Strings that were made by SimpleParticipant.toString().
 	 * 
 	 * @throws IllegalArgumentException
 	 *             If parsing fails.
@@ -148,13 +143,13 @@ public class SimpleParticipant {
 	}
 
 	/**
-	 * Returns a precise String representation of this SimpleParticipant that could
-	 * be used to create a new one identical to this.
+	 * Returns a precise String representation of this SimpleParticipant that could be used to create a new one identical to
+	 * this.
 	 */
 	@Override
 	public String toString() {
-		String baseString = "{" + hitbox.toString() + "," + direction.toString() + "," + type.toString() + ","
-				+ color.getRed() + "," + color.getGreen() + "," + color.getBlue();
+		String baseString = "{" + hitbox.toString() + "," + direction.toString() + "," + type.toString() + "," + color.getRed() + "," + color.getGreen() + ","
+				+ color.getBlue();
 
 		if (type == ParticipantType.mammoth) {
 			baseString += "," + hp;
